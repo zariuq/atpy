@@ -12,7 +12,7 @@ def path(bid, problem):
 
 def problems(bid):
    probs = os.listdir(os.path.join(BENCHMARKS_DIR, bid))
-   probs = [x for x in probs if not x.endswith(".cnf")]
+   probs = [x for x in probs if os.path.isfile(os.path.join(BENCHMARKS_DIR, bid, x)) and not x.endswith(".cnf")]
    return probs
 
 def compute(bid, pid, problem, limit):

@@ -11,11 +11,11 @@ def path(name, filename=None):
 
 def collect(name, rkeys):
    f_pre = path(name, "train.pre")
-   os.system("mkdir -p %s" % path(name))
    pretrains.prepare(rkeys)
    pretrains.make(rkeys, out=file(f_pre, "w"))
 
 def setup(name, rkeys):
+   os.system("mkdir -p %s" % path(name))
    if rkeys:
       collect(name, rkeys)
 
@@ -41,25 +41,31 @@ def standard(name, rkeys=None):
    liblinear.train(f_in, f_mod, f_out, f_log)
 
 def smartboost(name, pre):
-   pass
+   f_pre = path(name, "train.pre")
+   f_log = path(name, "train.log")
+   
+   f_in  = path(name, "train.in")
+   f_out = path(name, "train.out")
+   f_mod = path(name, "model.lin")
+
+   emap = setup(name, rkeys)
+   trains.make(file(f_pre), emap, out=file(f_in, "w"))
+
+   liblinear.train(f_in, f_mod, f_out, f_log)
 
 def join(name, models):
    pass
 
-aim01
-
-aim01---name0
-aim01---nameS
-
-aim01---aim-train--1s--singles--xProblem.p0
-
-aim01--aim-train+1s+singles+xProblem.p+standardS--aim-train+1s+union+standard
-
-pid--name--0
-
-name ::= bid/pid--1s/singles/problem.p/standardS
-
-
-
-
+#aim01
+#
+#aim01---name0
+#aim01---nameS
+#
+#aim01---aim-train--1s--singles--xProblem.p0
+#
+#aim01--aim-train+1s+singles+xProblem.p+standardS--aim-train+1s+union+standard
+#
+#pid--name--0
+#
+#name ::= bid/pid--1s/singles/problem.p/standardS
 

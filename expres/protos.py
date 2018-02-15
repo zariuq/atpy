@@ -8,3 +8,6 @@ def path(pid):
 def load(pid):
    return file(path(pid)).read().strip()
 
+def save(pid, proto):
+   file(path(pid),"w").write(proto.strip())
+
