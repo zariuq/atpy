@@ -1,10 +1,13 @@
 import re
 from .. import expres
 
+def mk_pid(pid, name, post):
+   return "%s--%s+%s" % (pid, name.replace("/", "+"), post)
+
 def standalone(pid, name):
    proto = expres.protos.load(pid)
    enigma = "1*Enigma(ConstPrio,%s,0.2)" % name
-   pid2 = "%s--%s+0" % (pid, name.replace("/","+"))
+   pid2 = mk_pid(pid, name, "0")
    proto2 = "%s-H'(%s)'" % (proto[:proto.index("-H'")], enigma)
    expres.protos.save(pid2, proto2)
 
@@ -17,7 +20,7 @@ def combined(pid, name, freq=None, mult=0.2):
       post = "F%sM%s"%(freq,mult)
 
    enigma = "%d*Enigma(ConstPrio,%s,%s)" % (freq,name,mult)
-   pid2 = "%s--%s+%s" % (pid, name.replace("/","+"), post)
+   pid2 = mk_pid(pid, name, post)
    proto2 = proto.replace("-H'(", "-H'(%s,"%enigma)
    expres.protos.save(pid2, proto2)
 

@@ -40,32 +40,35 @@ def standard(name, rkeys=None):
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
    liblinear.train(f_in, f_mod, f_out, f_log)
 
-def smartboost(name, pre):
+def smartboost(name, rkeys=None):
+   it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
+   f_in  = path(name, "%02dtrain.in" % it)
    
-   f_in  = path(name, "train.in")
-   f_out = path(name, "train.out")
-   f_mod = path(name, "model.lin")
-
    emap = setup(name, rkeys)
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
-   liblinear.train(f_in, f_mod, f_out, f_log)
+   log = file(f_log, "a")
+   while True:
+      log.write("\n--- ITER %d ---\n\n" % it)
+      f_in  = path(name, "%02dtrain.in" % it)
+      f_in2 = path(name, "%02dtrain.in" % (it+1))
+      f_out = path(name, "%02dtrain.out" % it)
+      f_mod = path(name, "%02dmodel.lin" % it)
+      log.flush()
+      liblinear.train(f_in, f_mod, f_out, f_log)
+      stat = liblinear.stats(f_in, f_out)
+      log.write("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
+      log.write("\n")
+      if stat["ACC:POS"] >= stat["ACC:NEG"]:
+      #if stat["WRONG:POS"] == 0:
+         os.system("cp %s %s" % (f_mod, path(name, "model.lin")))
+         break
+      trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
+      it += 1
+   log.close()
 
 def join(name, models):
    pass
-
-#aim01
-#
-#aim01---name0
-#aim01---nameS
-#
-#aim01---aim-train--1s--singles--xProblem.p0
-#
-#aim01--aim-train+1s+singles+xProblem.p+standardS--aim-train+1s+union+standard
-#
-#pid--name--0
-#
-#name ::= bid/pid--1s/singles/problem.p/standardS
 

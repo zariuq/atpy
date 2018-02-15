@@ -30,3 +30,18 @@ def make(pre, emap, out=None):
          train.append(tr)
    return train if not out else None
 
+def boost(f_in, f_out, out, method="WRONG:POS"):
+   if method != "WRONG:POS":
+      raise Exception("Unknown boost method")
+
+   ins = file(f_in).read().strip().split("\n")
+   outs = file(f_out).read().strip().split("\n")
+
+   for (correct,predicted) in zip(ins,outs):
+      out.write(correct)
+      out.write("\n")
+      cls = int(correct.split()[0])
+      if cls == 1 and cls != int(predicted):
+         out.write(correct)
+         out.write("\n")
+
