@@ -37,8 +37,12 @@ def standard(name, rkeys=None):
    f_log = path(name, "train.log")
 
    emap = setup(name, rkeys)
+   if not emap:
+      os.system("rm -fr %s" % path(name))
+      return False
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
    liblinear.train(f_in, f_mod, f_out, f_log)
+   return True
 
 def smartboost(name, rkeys=None):
    it = 0
@@ -47,6 +51,9 @@ def smartboost(name, rkeys=None):
    f_in  = path(name, "%02dtrain.in" % it)
    
    emap = setup(name, rkeys)
+   if not emap:
+      os.system("rm -fr %s" % path(name))
+      return False
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
    log = file(f_log, "a")
@@ -68,6 +75,7 @@ def smartboost(name, rkeys=None):
       trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
       it += 1
    log.close()
+   return True
 
 def join(name, models):
    pass
