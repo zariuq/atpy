@@ -10,6 +10,7 @@ def standalone(pid, name):
    pid2 = mk_pid(pid, name, "0")
    proto2 = "%s-H'(%s)'" % (proto[:proto.index("-H'")], enigma)
    expres.protos.save(pid2, proto2)
+   return pid2
 
 def combined(pid, name, freq=None, mult=0.2):
    proto = expres.protos.load(pid)
@@ -23,4 +24,5 @@ def combined(pid, name, freq=None, mult=0.2):
    pid2 = mk_pid(pid, name, post)
    proto2 = proto.replace("-H'(", "-H'(%s,"%enigma)
    expres.protos.save(pid2, proto2)
+   return pid2
 
