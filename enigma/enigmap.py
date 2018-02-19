@@ -22,8 +22,12 @@ def create(pre):
    for pr in pre:
       (sign,clause,conj) = pr.strip().split("|")
       for feature in clause.strip().split(" "):
+         if "/" in feature:
+            feature = feature.split("/")[0]
          features.add(feature)
       for feature in conj.strip().split(" "):
+         if "/" in feature:
+            feature = feature.split("/")[0]
          features.add(feature)
    return {y:x for (x,y) in enumerate(sorted(features), start=1)}
 

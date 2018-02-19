@@ -7,8 +7,16 @@ PREFIX = {
 
 def count(ftrs, counts, emap, offset):
    for ftr in ftrs:
+      if "/" in ftr:
+         parts = ftr.split("/")
+         ftr = parts[0]
+         inc = int(parts[1])
+         if inc == 0:
+            continue
+      else:
+         inc = 1
       fid = emap[ftr] + offset
-      counts[fid] = counts[fid]+1 if fid in counts else 1
+      counts[fid] = counts[fid]+inc if fid in counts else inc
 
 def encode(pr, emap):
    (sign,clause,conj) = pr.strip().split("|")
