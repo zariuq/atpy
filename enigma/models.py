@@ -77,6 +77,33 @@ def smartboost(name, rkeys=None):
    log.close()
    return True
 
-def join(name, models):
+def _update_joint(joint, name, emap, renaming):
+   pass
+
+def join(name, models, combine=max):
+   emap = enimap.join([path(model, "enigma.map") for model in models])
+
+   ws1 = {ftr:[] for ftr in emap}
+   ws2 = {ftr:[] for ftr in emap}
+   for model in models:
+      f_mod = path(model, "model.lin")
+      f_map = path(model, "enigma.map")
+      (header,w1,w2) = liblinear.load(f_mod, f_map)
+      for ftr in w1:
+         if w1[ftr] != 0:
+            ws1[ftr].append(w1[ftr])
+      for ftr in w2:
+         if w2[ftr] != 0:
+            ws2[ftr].append(w2[ftr])
+   
+   w1 = {ftr:combine(ws1[ftr]) for ftr in emap}
+   w2 = {ftr:combine(ws2[ftr]) for ftr in emap}
+
+   f_mod = path(model, "model.lin")
+   f_map = path(model, "enigma.map")
+   enigmap.save(emap, f_map)
+   liblinear.save(header, w1, w2, f_mod)
+
+   emap = {}
    pass
 

@@ -1,14 +1,14 @@
 
 def load(f_map):
-   nums = {}
+   emap = {}
    if not os.path.exists(f_map):
-      return nums
+      return emap
    for line in file(f_map):
       (fid,ftr) = line.strip().split("(")[1].split(",")
       fid = int(fid.strip(", "))
       ftr = ftr.strip('") .')
-      nums[ftr] = fid
-   return nums
+      emap[ftr] = fid
+   return emap
 
 def save(emap, f_map):
    rev = {emap[ftr]:ftr for ftr in emap}
@@ -31,6 +31,10 @@ def create(pre):
          features.add(feature)
    return {y:x for (x,y) in enumerate(sorted(features), start=1)}
 
-def update(this, other):
-   pass
+def join(f_maps):
+   features = set()
+   for f_map in f_maps:
+      features.union(load(f_map).keys())
+   return {y:x for (x,y) in enumerate(sorted(features), start=1)}
+
 
