@@ -4,7 +4,7 @@ from subprocess import STDOUT
 PERF = "perf stat -e task-clock:up,page-faults:up,instructions:up"
 
 E_BIN = "eprover"
-E_ARGS = "--cpu-limit=%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
+E_ARGS = "--cpu-limit=%s -l1 -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
 
 def run(f_problem, proto, limit, f_out=None):
    cmd = "%s %s %s %s %s" % (PERF,E_BIN,E_ARGS%limit,proto,f_problem)

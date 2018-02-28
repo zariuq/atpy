@@ -10,11 +10,15 @@ def path(name, filename=None):
       return os.path.join(ENIGMA_ROOT, name)
 
 def collect(name, rkeys):
+   print "collecting", name
    f_pre = path(name, "train.pre")
    pretrains.prepare(rkeys)
+   print "making", name
    pretrains.make(rkeys, out=file(f_pre, "w"))
+   print "collected", name
 
 def setup(name, rkeys):
+   print "setup", name
    os.system("mkdir -p %s" % path(name))
    if rkeys:
       collect(name, rkeys)
@@ -29,12 +33,15 @@ def setup(name, rkeys):
    enigmap.save(emap, f_map)
    return emap
 
-def standard(name, rkeys=None):
+def standard(name, rkeys=None, force=False):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
    f_out = path(name, "train.out")
    f_log = path(name, "train.log")
+
+   if not force and os.path.isfile(f_mod):
+      return
 
    emap = setup(name, rkeys)
    if not emap:
@@ -44,12 +51,15 @@ def standard(name, rkeys=None):
    liblinear.train(f_in, f_mod, f_out, f_log)
    return True
 
-def smartboost(name, rkeys=None):
+def smartboost(name, rkeys=None, force=False):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
    f_in  = path(name, "%02dtrain.in" % it)
-   
+   f_Mod = path(name, "model.lin")
+   if not force and os.path.isfile(f_Mod):
+      return
+  
    emap = setup(name, rkeys)
    if not emap:
       os.system("rm -fr %s" % path(name))
@@ -70,18 +80,16 @@ def smartboost(name, rkeys=None):
       log.write("\n")
       if stat["ACC:POS"] >= stat["ACC:NEG"]:
       #if stat["WRONG:POS"] == 0:
-         os.system("cp %s %s" % (f_mod, path(name, "model.lin")))
+         os.system("cp %s %s" % (f_mod, f_Mod))
          break
       trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
       it += 1
    log.close()
    return True
 
-def _update_joint(joint, name, emap, renaming):
-   pass
-
 def join(name, models, combine=max):
-   emap = enimap.join([path(model, "enigma.map") for model in models])
+   f_maps = [path(model, "enigma.map") for model in models]
+   emap = enimap.join(f_maps)
 
    ws1 = {ftr:[] for ftr in emap}
    ws2 = {ftr:[] for ftr in emap}
