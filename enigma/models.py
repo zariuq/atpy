@@ -13,7 +13,7 @@ def collect(name, rkeys):
    print "collecting", name
    f_pre = path(name, "train.pre")
    pretrains.prepare(rkeys)
-   print "making", name
+   print "making pretrains", name
    pretrains.make(rkeys, out=file(f_pre, "w"))
    print "collected", name
 
@@ -47,8 +47,14 @@ def standard(name, rkeys=None, force=False):
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
+   print "making trains", name
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
+   print "training", name
    liblinear.train(f_in, f_mod, f_out, f_log)
+      
+   stat = liblinear.stats(f_in, f_out)
+   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+
    return True
 
 def smartboost(name, rkeys=None, force=False):
@@ -64,8 +70,10 @@ def smartboost(name, rkeys=None, force=False):
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
+   print "making trains", name
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
+   print "smart-boosting", name
    log = file(f_log, "a")
    while True:
       log.write("\n--- ITER %d ---\n\n" % it)
@@ -85,6 +93,10 @@ def smartboost(name, rkeys=None, force=False):
       trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
       it += 1
    log.close()
+   
+   stat = liblinear.stats(f_in, f_out)
+   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+   
    return True
 
 def join(name, models, combine=max):
