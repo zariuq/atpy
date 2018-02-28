@@ -1,6 +1,6 @@
 import os
 import json
-from . import details
+from . import details, summary
 
 HTML_DIR = os.getenv("EXPRES_HTML", 
    os.path.join(os.getenv("HOME"),"public_html","expres"))
@@ -19,7 +19,7 @@ def begin(out, title, data, exp):
    <script>
    window.onload = function() {
       updateLegend(%s, "legend___%s");
-      updateTable(%s, "%s", 0, 1);
+      updateTable(%s, "%s", 3, -1);
    };
    </script>
 </head>
@@ -75,5 +75,28 @@ def processed(bid, pids, results, exp="results", data="data"):
    js["CLASSES"] = {}
    js["DATA"] = [[d[0]]+[proc[d][pid] for pid in pids] for d in sorted(proc)]
    js["LEGEND"] = legend
+   file(f_js,"w").write("var %s = %s;" % (data,json.dumps(js)))
+
+def solves(bid, pids, limit, results, exp="results", ref=None):
+   stat = summary.make(bid, pids, results, ref=ref)
+
+   data = ("summary---%s---%s" % (bid,limit)).replace("-","_")
+
+   f_out = path(os.path.join(exp, data+".html"))
+   os.system("mkdir -p %s" % os.path.dirname(f_out))
+   out = file(f_out, "w")
+  
+   begin(out, "Summary @ %s @ %ss" % (bid, limit), data, exp)
+   table(out, data)
+   end(out)
+
+   f_js = path(os.path.join(exp, "data", data+".js"))
+   os.system("mkdir -p %s" % os.path.dirname(f_js))
+   js = {}
+   js["HEADER"] = ["proto", "total", "errors", "solved"]
+   if ref:
+      js["HEADER"] += ["plus", "minus"]
+   js["CLASSES"] = {}
+   js["DATA"] = [[pid]+stat[pid] for pid in stat]
    file(f_js,"w").write("var %s = %s;" % (data,json.dumps(js)))
 

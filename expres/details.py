@@ -4,7 +4,7 @@ def make(bid, pids, results, selector=None, key=None, none="-"):
    if not selector:
       selector = lambda result: result[key] if key in result else none
    problems = [(problem,limit) for (bid,pid,problem,limit) in results]
-   pid0 = pids[0]
+   #pid0 = pids[0]
    for (problem,limit) in problems:
       for pid in pids:
          rkey = (bid,pid,problem,limit)

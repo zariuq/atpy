@@ -57,3 +57,6 @@ def solved(result, limit=None):
       return ok and result["RUNTIME"] <= limit
    return ok
 
+def error(result):
+   return "STATUS" not in result or result["STATUS"] not in STATUS_ALL
+
