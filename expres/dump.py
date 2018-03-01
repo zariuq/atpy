@@ -19,7 +19,7 @@ def processed(bid, pids, results, dkey=None):
       print out
    print
 
-def solves(bid, pids, results, ref=None):
+def solved(bid, pids, results, ref=None):
    print
    print "Summary @ %s:" % bid
    data = summary.make(bid, pids, results, ref=ref) 
