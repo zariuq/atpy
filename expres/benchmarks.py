@@ -36,7 +36,7 @@ def eval(bid, pids, limit, cores=4, force=False):
    print "Evaluating %s protos @ %s (%d) @ %s seconds @ %s cores: ETA %ds" % (len(pids), bid, len(probs), limit, cores, float(len(pids))*len(probs)*limit/cores)
    jobs = [(bid,pid,problem,limit) for pid in pids for problem in probs]
    pool = Pool(cores)
-   res = pool.map_async(runjob if not force else runjob_force, jobs).get(2*limit)
+   res = pool.map_async(runjob if not force else runjob_force, jobs).get(365*24*3600)
    res = dict(zip(jobs, res))
    solvedb.update(res)
    return res
