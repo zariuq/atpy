@@ -85,10 +85,13 @@ def processed(bid, pids, results, exp="results", data="data"):
    rows = [[d[0]]+[proc[d][pid] for pid in pids] for d in sorted(proc)]
    jsdata.save(f_js, data, header, {}, rows, leg)
 
-def solved(bid, pids, limit, results, exp="results", ref=None):
-   stat = summary.make(bid, pids, results, ref=ref)
+def solved(bid, pids, limit, results, exp="results", ref_pid=None, multi_pid=True):
+   stat = summary.make(bid, pids, results, ref=ref_pid)
 
-   data = ("summary---%s---%s" % (bid,limit)).replace("-","_")
+   if (not multi_pid) and ref_pid:
+      data = ("summary---%s---%s---%s" % (bid,ref_pid,limit)).replace("-","_")
+   else:
+      data = ("summary---%s---%s" % (bid,limit)).replace("-","_")
    out = create(exp, data)
    begin(out, "Summary @ %s @ %ss" % (bid, limit), data, exp, h_table=True, h_legend=False)
    table(out, data)
@@ -100,7 +103,7 @@ def solved(bid, pids, limit, results, exp="results", ref=None):
       jsdata.update(f_js, data, rows, key=lambda row: row[0])
    else:
       header = ["proto", "total", "errors", "solved"]
-      if ref: 
+      if ref_pid: 
          header += ["plus", "minus"]
       jsdata.save(f_js, data, header, {}, rows, None)
 
