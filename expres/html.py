@@ -95,7 +95,12 @@ def solved(bid, pids, limit, results, exp="results", ref=None):
    end(out)
    
    f_js = path(os.path.join(exp, "data", data+".js"))
-   header = ["proto", "total", "errors", "solved"]+(["plus", "minus"] if ref else [])
    rows = [[pid]+stat[pid] for pid in stat]
-   jsdata.save(f_js, data, header, {}, rows, None)
+   if os.path.isfile(f_js):
+      jsdata.update(f_js, data, rows, key=lambda row: row[0])
+   else:
+      header = ["proto", "total", "errors", "solved"]
+      if ref: 
+         header += ["plus", "minus"]
+      jsdata.save(f_js, data, header, {}, rows, None)
 
