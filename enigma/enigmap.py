@@ -1,3 +1,4 @@
+import os
 
 def load(f_map):
    emap = {}
@@ -34,7 +35,6 @@ def create(pre):
 def join(f_maps):
    features = set()
    for f_map in f_maps:
-      features.union(load(f_map).keys())
+      features.update(load(f_map).keys())
    return {y:x for (x,y) in enumerate(sorted(features), start=1)}
-
 
