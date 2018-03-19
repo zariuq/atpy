@@ -10,15 +10,11 @@ def path(name, filename=None):
       return os.path.join(ENIGMA_ROOT, name)
 
 def collect(name, rkeys):
-   print "collecting", name
    f_pre = path(name, "train.pre")
    pretrains.prepare(rkeys)
-   print "making pretrains", name
    pretrains.make(rkeys, out=file(f_pre, "w"))
-   print "collected", name
 
 def setup(name, rkeys):
-   print "setup", name
    os.system("mkdir -p %s" % path(name))
    if rkeys:
       collect(name, rkeys)
@@ -33,7 +29,7 @@ def setup(name, rkeys):
    enigmap.save(emap, f_map)
    return emap
 
-def standard(name, rkeys=None, force=False):
+def standard(name, rkeys=None, force=False, gzip=True):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
@@ -47,7 +43,6 @@ def standard(name, rkeys=None, force=False):
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
-   print "making trains", name
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
    print "training", name
    liblinear.train(f_in, f_mod, f_out, f_log)
@@ -55,9 +50,12 @@ def standard(name, rkeys=None, force=False):
    stat = liblinear.stats(f_in, f_out)
    print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
 
+   if gzip:
+      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
+
    return True
 
-def smartboost(name, rkeys=None, force=False):
+def smartboost(name, rkeys=None, force=False, gzip=True):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
@@ -70,7 +68,6 @@ def smartboost(name, rkeys=None, force=False):
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
-   print "making trains", name
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
    print "smart-boosting", name
@@ -96,6 +93,9 @@ def smartboost(name, rkeys=None, force=False):
    
    stat = liblinear.stats(f_in, f_out)
    print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+   
+   if gzip:
+      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
    
    return True
 
@@ -123,6 +123,5 @@ def join(name, models, combine=max):
    f_mod = path(name, "model.lin")
    f_map = path(name, "enigma.map")
    enigmap.save(emap, f_map)
-   print f_map
    liblinear.save(header, w1, w2, emap, f_mod)
 

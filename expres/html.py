@@ -53,17 +53,6 @@ def end(out):
    out.write(END)
    out.close()
 
-def jsdata_save(exp, data, header, classes, rows, leg=None):
-   f_js = path(os.path.join(exp, "data", data+".js"))
-   os.system("mkdir -p %s" % os.path.dirname(f_js))
-   js = {}
-   js["HEADER"] = header
-   js["CLASSES"] = classes
-   js["DATA"] = rows
-   if leg:
-      js["LEGEND"] = leg
-   file(f_js,"w").write("var %s = %s;" % (data,json.dumps(js)))
-
 def create(exp, data):
    f_out = path(os.path.join(exp, data+".html"))
    os.system("mkdir -p %s" % os.path.dirname(f_out))
@@ -89,9 +78,9 @@ def solved(bid, pids, limit, results, exp="results", ref_pid=None, multi_pid=Tru
    stat = summary.make(bid, pids, results, ref=ref_pid)
 
    if (not multi_pid) and ref_pid:
-      data = ("summary---%s---%s---%s" % (bid,ref_pid,limit)).replace("-","_")
+      data = ("summary---%s---%s---%s" % (bid.replace("/","_"),ref_pid,limit)).replace("-","_")
    else:
-      data = ("summary---%s---%s" % (bid,limit)).replace("-","_")
+      data = ("summary---%s---%s" % (bid.replace("/","_"),limit)).replace("-","_")
    out = create(exp, data)
    begin(out, "Summary @ %s @ %ss" % (bid, limit), data, exp, h_table=True, h_legend=False)
    table(out, data)
