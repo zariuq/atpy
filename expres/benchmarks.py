@@ -33,9 +33,10 @@ def runjob_force(job):
 
 def eval(bid, pids, limit, cores=4, force=False):
    probs = problems(bid)
+   print "Evaluating %s protos @ %s (%d) @ %s seconds @ %s cores: ETA %ds" % (len(pids), bid, len(probs), limit, cores, float(len(pids))*len(probs)*limit/cores)
    jobs = [(bid,pid,problem,limit) for pid in pids for problem in probs]
    pool = Pool(cores)
-   res = pool.map(runjob if not force else runjob_force, jobs)
+   res = pool.map_async(runjob if not force else runjob_force, jobs).get(365*24*3600)
    res = dict(zip(jobs, res))
    solvedb.update(res)
    pool.close()
@@ -45,4 +46,12 @@ def solved(bid, pids, limit, cores=4, force=False):
    res = eval(bid, pids, limit, cores=cores, force=force)
    res = {x:res[x] for x in res if eprover.result.solved(res[x])}
    return res
+
+def get(bid, pids, limit):
+   probs = problems(bid)
+   rkeys = [(bid,pid,problem,limit) for pid in pids for problem in probs]
+   print "Loading %d results ..." % len(rkeys)
+   ret = {rkey:results.load(*rkey) for rkey in rkeys if results.exists(*rkey)}
+   print "done."
+   return ret
 

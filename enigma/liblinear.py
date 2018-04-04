@@ -1,4 +1,5 @@
 import subprocess
+from . import enigmap
 
 PERF = ["perf", "stat", "-e", "task-clock:up,page-faults:up,instructions:up"]
 
@@ -11,7 +12,6 @@ def train(f_in, f_mod, f_out=None, f_log=None):
 
    if f_out:
       predict(f_in, f_mod, f_out, f_log)
-      
 
 def predict(f_in, f_mod, f_out, f_log):
    if f_log:
@@ -64,4 +64,65 @@ def stats(f_in, f_out):
 
    return stat
 
+def load(f_mod, f_map):
+   emap = enigmap.load(f_map)
+   lines = file(f_mod)
+   rev = {emap[ftr]:ftr for ftr in emap}
+
+   header = {}
+   for line in lines:
+      line = line.strip()
+      if line == "w":
+         break
+      parts = line.split()
+      header[parts[0]] = " ".join(parts[1:])
+
+   # clause features
+   w1 = {}
+   i = 1
+   for line in lines:
+      w = float(line.strip())
+      w1[rev[i]] = w
+      if i == len(emap):
+         break
+      i += 1
+
+   # conjecture features
+   w2 = {}
+   i = 1
+   for line in lines:
+      w = float(line.strip())
+      w2[rev[i]] = w
+      if i == len(emap):
+         break
+      i += 1
+
+   lines.close()
+   return (header,w1,w2)
+
+def save(header, w1, w2, emap, f_mod):
+   rev = {emap[ftr]:ftr for ftr in emap}
+   lines = file(f_mod, "w")
+
+   info = lambda key: lines.write("%s %s\n" % (key, header[key]))
+   info("solver_type")
+   info("nr_class")
+   info("label")
+   lines.write("nr_feature %d\n" % (2*len(emap)))
+   info("bias")
+   lines.write("w\n")
+
+   for i in xrange(1,len(rev)+1):
+      if rev[i] in w1 and w1[rev[i]] != 0:
+         lines.write("%.16f\n"%w1[rev[i]])
+      else:
+         lines.write("0\n")
+   
+   for i in xrange(1,len(rev)+1):
+      if rev[i] in w2 and w2[rev[i]] != 0:
+         lines.write("%.16f\n"%w2[rev[i]])
+      else:
+         lines.write("0\n")
+
+   lines.close()
 

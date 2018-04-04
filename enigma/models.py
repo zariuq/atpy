@@ -29,33 +29,48 @@ def setup(name, rkeys):
    enigmap.save(emap, f_map)
    return emap
 
-def standard(name, rkeys=None):
+def standard(name, rkeys=None, force=False, gzip=True):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
    f_out = path(name, "train.out")
    f_log = path(name, "train.log")
 
+   if not force and os.path.isfile(f_mod):
+      return
+
    emap = setup(name, rkeys)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
+   print "training", name
    liblinear.train(f_in, f_mod, f_out, f_log)
+      
+   stat = liblinear.stats(f_in, f_out)
+   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+
+   if gzip:
+      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
+
    return True
 
-def smartboost(name, rkeys=None):
+def smartboost(name, rkeys=None, force=False, gzip=True):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
    f_in  = path(name, "%02dtrain.in" % it)
-   
+   f_Mod = path(name, "model.lin")
+   if not force and os.path.isfile(f_Mod):
+      return
+  
    emap = setup(name, rkeys)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
+   print "smart-boosting", name
    log = file(f_log, "a")
    while True:
       log.write("\n--- ITER %d ---\n\n" % it)
@@ -70,18 +85,23 @@ def smartboost(name, rkeys=None):
       log.write("\n")
       if stat["ACC:POS"] >= stat["ACC:NEG"]:
       #if stat["WRONG:POS"] == 0:
-         os.system("cp %s %s" % (f_mod, path(name, "model.lin")))
+         os.system("cp %s %s" % (f_mod, f_Mod))
          break
       trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
       it += 1
    log.close()
+   
+   stat = liblinear.stats(f_in, f_out)
+   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+   
+   if gzip:
+      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
+   
    return True
 
-def _update_joint(joint, name, emap, renaming):
-   pass
-
 def join(name, models, combine=max):
-   emap = enimap.join([path(model, "enigma.map") for model in models])
+   f_maps = [path(model, "enigma.map") for model in models]
+   emap = enigmap.join(f_maps)
 
    ws1 = {ftr:[] for ftr in emap}
    ws2 = {ftr:[] for ftr in emap}
@@ -96,14 +116,12 @@ def join(name, models, combine=max):
          if w2[ftr] != 0:
             ws2[ftr].append(w2[ftr])
    
-   w1 = {ftr:combine(ws1[ftr]) for ftr in emap}
-   w2 = {ftr:combine(ws2[ftr]) for ftr in emap}
+   w1 = {ftr:combine(ws1[ftr]) for ftr in emap if ws1[ftr]}
+   w2 = {ftr:combine(ws2[ftr]) for ftr in emap if ws2[ftr]}
 
-   f_mod = path(model, "model.lin")
-   f_map = path(model, "enigma.map")
+   os.system("mkdir -p %s" % path(name))
+   f_mod = path(name, "model.lin")
+   f_map = path(name, "enigma.map")
    enigmap.save(emap, f_map)
-   liblinear.save(header, w1, w2, f_mod)
-
-   emap = {}
-   pass
+   liblinear.save(header, w1, w2, emap, f_mod)
 
