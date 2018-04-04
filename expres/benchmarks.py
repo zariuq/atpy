@@ -38,6 +38,7 @@ def eval(bid, pids, limit, cores=4, force=False):
    res = pool.map(runjob if not force else runjob_force, jobs)
    res = dict(zip(jobs, res))
    solvedb.update(res)
+   pool.close()
    return res
 
 def solved(bid, pids, limit, cores=4, force=False):
