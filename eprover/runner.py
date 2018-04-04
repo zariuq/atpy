@@ -15,7 +15,7 @@ def run(f_problem, proto, limit, f_out=None):
       (t,p) = limit.split("+")
       (t,p) = (t[1:], p[1:])
       (t,p) = (int(t), int(p))
-      limit = "--cpu-limit=%s --processed-set-limit=%s" % (t,p)
+      limit = "--cpu-limit=%s --processed-clauses-limit=%s" % (t,p)
    eargs = E_ARGS % limit
 
    cmd = "%s %s %s %s %s" % (PERF,E_BIN,eargs,proto,f_problem)

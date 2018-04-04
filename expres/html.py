@@ -76,13 +76,17 @@ def processed(bid, pids, results, exp="results", data="data"):
 
 def solved(bid, pids, limit, results, exp="results", ref_pid=None, multi_pid=True):
    stat = summary.make(bid, pids, results, ref=ref_pid)
+   if isinstance(limit, int):
+      limit = "%ss" % limit
+   else:
+      limit = limit.replace("+","")
 
    if (not multi_pid) and ref_pid:
       data = ("summary---%s---%s---%s" % (bid.replace("/","_"),ref_pid,limit)).replace("-","_")
    else:
       data = ("summary---%s---%s" % (bid.replace("/","_"),limit)).replace("-","_")
    out = create(exp, data)
-   begin(out, "Summary @ %s @ %ss" % (bid, limit), data, exp, h_table=True, h_legend=False)
+   begin(out, "Summary @ %s @ %s" % (bid, limit), data, exp, h_table=True, h_legend=False)
    table(out, data)
    end(out)
    
