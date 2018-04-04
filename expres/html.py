@@ -27,7 +27,7 @@ def onload(data, h_table, h_legend):
       js += 'updateLegend(%s, "legend___%s"); ' % (data, data)
    return js
 
-def begin(out, title, data, exp, h_table, h_legend):
+def begin(out, title, data, exp, h_table, h_legend, ref=None):
    out.write(BEGIN)
    out.write(TITLE % title)
    out.write(CSS)
@@ -38,6 +38,8 @@ def begin(out, title, data, exp, h_table, h_legend):
    out.write(H1 % title)
    out.write('<p>experiment id: %s\n' % exp)
    out.write('<br>data id: %s\n\n' % data)
+   if ref:
+      out.write('<br>ref: %s\n\n' % ref)
 
 def legend(out, data):
    out.write(H2 % "Legend")
@@ -86,7 +88,7 @@ def solved(bid, pids, limit, results, exp="results", ref_pid=None, multi_pid=Tru
    else:
       data = ("summary---%s---%s" % (bid.replace("/","_"),limit)).replace("-","_")
    out = create(exp, data)
-   begin(out, "Summary @ %s @ %s" % (bid, limit), data, exp, h_table=True, h_legend=False)
+   begin(out, "Summary @ %s @ %s" % (bid, limit), data, exp, h_table=True, h_legend=False, ref=ref_pid)
    table(out, data)
    end(out)
    
@@ -96,7 +98,9 @@ def solved(bid, pids, limit, results, exp="results", ref_pid=None, multi_pid=Tru
       jsdata.update(f_js, data, rows, key=lambda row: row[0])
    else:
       header = ["proto", "total", "errors", "solved"]
+      classes = {}
       if ref_pid: 
          header += ["plus", "minus"]
-      jsdata.save(f_js, data, header, {}, rows, None)
+         classes[ref_pid] = "ref"
+      jsdata.save(f_js, data, header, classes, rows, None)
 
