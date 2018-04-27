@@ -1,7 +1,7 @@
 import re
 from .. import expres
 
-def standalone(pid, name, mult=0.2, noinit=False):
+def standalone(pid, name, mult=0, noinit=False):
    proto = expres.protos.load(pid)
    enigma = "1*Enigma(ConstPrio,%s,%s)" % (name, mult)
    eproto = "%s-H'(%s)'" % (proto[:proto.index("-H'")], enigma)
@@ -13,7 +13,7 @@ def standalone(pid, name, mult=0.2, noinit=False):
    expres.protos.save(epid, eproto)
    return epid
 
-def combined(pid, name, freq=None, mult=0.2, noinit=False):
+def combined(pid, name, freq=None, mult=0, noinit=False):
    proto = expres.protos.load(pid)
    if not freq:
       freq = sum(map(int,re.findall(r"(\d*)\*", proto)))
