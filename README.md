@@ -1,2 +1,3 @@
-# atpy
-Python Library for PARG ATP Projects
+# **APTy***
+
+Python Library ATP Projects (see examples/README.Enigma.md)
