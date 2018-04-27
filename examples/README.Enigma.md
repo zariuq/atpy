@@ -79,6 +79,8 @@ Once you have **ATPy** in PYTHONPATH, you can import it in Python:
 from atpy import *
 ```
 
+Use `loop.py` and `example.sh` from `enigma.tar.gz` for an inspiration (see Quick start).
+
 **ATPy** and an Enigma-inside E Prover make use of the following environment
 variables which should be set appropriately.
 
