@@ -1,5 +1,5 @@
-ENIGMA
-======
+**ATPy** for ENIGMA
+===================
 
 O Brave man!  You've come so far, don't let it slip away...
 
@@ -20,7 +20,7 @@ $ ./example.sh
 The example trains an Enigma predictor using accuracy-balancing boosting and
 directed looping.  It evaluates the original and all the intermediate
 predictors on a training set of 50 MZR problems.  It prints numbers of
-processed clauses and a summary.
+processed clauses and the summary of solved problems.
 
 Always run the example directly as above from the `enigma` directory and do
 not mess about with the directory structure (unless you read the Usage).
@@ -51,7 +51,7 @@ $ cd CONTRIB/liblinear
 $ make
 ```
 
-You need the following binaries in your `PATH` for *atpy* to work:
+You need the following binaries in your `PATH` for **ATPy** to work:
 
 ```
 PROVER/eprover
@@ -73,13 +73,15 @@ Usage
 Note: E _strategies_ are sometimes called _protocols_, from historical
 reasons.
 
-Once you have *ATPy* in PYTHONPATH, you can import it in Python:
+Once you have **ATPy** in PYTHONPATH, you can import it in Python:
 
 ```python
 from atpy import *
 ```
 
-*ATPy* and Enigma-inside E Prover make use of the following environment
+Use `loop.py` and `example.sh` from `enigma.tar.gz` for an inspiration (see Quick start).
+
+**ATPy** and an Enigma-inside E Prover make use of the following environment
 variables which should be set appropriately.
 
 + `ENIGMA_ROOT`: Directory with Enigma models.
@@ -104,13 +106,13 @@ The following terminology is used in the code base:
   `limit`.  The corresponding E output file is in
   `EXPRES_RESULTS/bid/pid/limit`.
 
-The following are the key function of *ATPy* for Enigma:
+The following are the key function of **ATPy** for Enigma:
 
 + `expres.benchmarks.eval(bid, pids, limit)`: Evaluate strategies `pids` on
   benchmark `bid` with `limit`, and return `results` as a map from `rkeys`
   to parsed results.
 + `enigma.models.smartboost(name, results)`: Create model from training data
-  in r`esults`, use accuracy-balancing boosting, and put the result in
+  `results`, use accuracy-balancing boosting, and put the result in
   `ENIGMA_ROOT/name`.
 + `enigma.protos.standalone(pid, name)`: Enrich strategy `pid` with Enigma
   model `name`, override any previous clause selection mechanism in `pid` to
