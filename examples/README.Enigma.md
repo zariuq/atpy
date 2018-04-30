@@ -3,11 +3,19 @@
 
 O Brave man!  You've come so far, don't let it slip away...
 
+Warning
+-------
+
+Performance Monitoring Tools for Linux *perf* (http://perf.wiki.kernel.org) must be installed from your distribution repository.  The binary can not be provided, as it needs to match specific kernel version.  You also need reasonable permissons to access performance events system (say `1` in `/proc/sys/kernel/perf_event_paranoid`).
 
 Quick start
 -----------
 
-Performance analysis tools for Linux *perf* must be installed.
+### Warning ###
+
+See the above warning!
+
+### Quick, quick ... ###
 
 ```console
 $ git clone https://github.com/ai4reason/atpy.git
