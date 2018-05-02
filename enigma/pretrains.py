@@ -29,6 +29,17 @@ def prepare(rkeys):
             #stdout=out, stderr=subprocess.STDOUT)
          out.close()
 
+def translate(f_cnf, f_conj, f_out):
+   out = file(f_out, "w")
+   f_empty = "empty.tmp"
+   os.system("rm -fr %s" % f_empty)
+   os.system("touch %s" % f_empty)
+   subprocess.call(["enigma-features", "--free-numbers", f_cnf, f_empty, f_conj], \
+      stdout=out)
+      #stdout=out, stderr=subprocess.STDOUT)
+   out.close()
+   os.system("rm -fr %s" % f_empty)
+
 def make(rkeys, out=None):
    pre = []
    for (bid, pid, problem, limit) in rkeys:
