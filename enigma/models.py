@@ -88,10 +88,10 @@ def smartboost(name, rkeys=None, force=False, gzip=True):
       if not method:
          if stat["ACC:POS"] < stat["ACC:NEG"]:
             method = "WRONG:POS"
-            terminate = lambda s: s["ACC:POS"] >= s["ACC:NEG"]:
+            terminate = lambda s: s["ACC:POS"] >= s["ACC:NEG"]
          else:
             method = "WRONG:NEG"
-            terminate = lambda s: s["ACC:NEG"] >= s["ACC:POS"]:
+            terminate = lambda s: s["ACC:NEG"] >= s["ACC:POS"]
 
       #if stat["ACC:POS"] >= stat["ACC:NEG"]:
       #if stat["WRONG:POS"] == 0:
