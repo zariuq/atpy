@@ -98,7 +98,7 @@ def smartboost(name, rkeys=None, force=False, gzip=True):
       if terminate(stat):
          os.system("cp %s %s" % (f_mod, f_Mod))
          break
-      trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
+      trains.boost(f_in, f_out, out=file(f_in2,"w"), method=method)
       it += 1
    log.close()
    
