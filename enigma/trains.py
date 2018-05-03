@@ -5,7 +5,7 @@ PREFIX = {
    "*": "Should not ever see me"
 }
 
-def count(ftrs, counts, emap, offset):
+def count(ftrs, counts, emap, offset, strict=True):
    for ftr in ftrs:
       if "/" in ftr:
          parts = ftr.split("/")
@@ -15,22 +15,24 @@ def count(ftrs, counts, emap, offset):
             continue
       else:
          inc = 1
+      if (not strict) and (ftr not in emap):
+         continue
       fid = emap[ftr] + offset
       counts[fid] = counts[fid]+inc if fid in counts else inc
 
-def encode(pr, emap):
+def encode(pr, emap, strict=True):
    (sign,clause,conj) = pr.strip().split("|")
    counts = {}
-   count(clause.strip().split(" "), counts, emap, 0)
-   count(  conj.strip().split(" "), counts, emap, len(emap))
+   count(clause.strip().split(" "), counts, emap, 0, strict)
+   count(  conj.strip().split(" "), counts, emap, len(emap), strict)
    ftrs = ["%s:%s"%(fid,counts[fid]) for fid in sorted(counts)] 
    ftrs = "%s %s"%(PREFIX[sign], " ".join(ftrs))
    return ftrs
 
-def make(pre, emap, out=None):
+def make(pre, emap, out=None, strict=True):
    train = []
    for pr in pre:
-      tr = encode(pr, emap)
+      tr = encode(pr, emap, strict)
       if out:
          out.write(tr)
          out.write("\n")
