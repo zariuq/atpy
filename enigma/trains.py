@@ -5,6 +5,11 @@ PREFIX = {
    "*": "Should not ever see me"
 }
 
+BOOSTS = {
+   "WRONG:POS": 1,
+   "WRONG:NEG": 10
+}
+
 def count(ftrs, counts, emap, offset, strict=True):
    for ftr in ftrs:
       if "/" in ftr:
@@ -41,8 +46,9 @@ def make(pre, emap, out=None, strict=True):
    return train if not out else None
 
 def boost(f_in, f_out, out, method="WRONG:POS"):
-   if method != "WRONG:POS":
-      raise Exception("Unknown boost method")
+   if method not in BOOSTS:
+      raise Exception("Unknown boost method (%s)")
+   CLS = BOOSTS[method]
 
    ins = file(f_in).read().strip().split("\n")
    outs = file(f_out).read().strip().split("\n")
@@ -51,7 +57,7 @@ def boost(f_in, f_out, out, method="WRONG:POS"):
       out.write(correct)
       out.write("\n")
       cls = int(correct.split()[0])
-      if cls == 1 and cls != int(predicted):
+      if cls == CLS and cls != int(predicted):
          out.write(correct)
          out.write("\n")
 
