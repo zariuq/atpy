@@ -68,7 +68,8 @@ class PremiseTrainer(Trainer):
          N=len(insts),
          validN=str(len(insts)),
          init="init_00",
-         out=None,
+         #out=None,
+         out=file(path.join(cwd,"paramils.out"),"w"),
          time_limit=state.train_limit)
 
       params = self.runner.clean(params)

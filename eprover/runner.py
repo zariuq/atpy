@@ -7,7 +7,7 @@ E_BIN = "eprover"
 E_ARGS = "%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
 #E_ARGS = "--cpu-limit=%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
 
-def run(f_problem, proto, limit, f_out=None):
+def cmd(f_problem, proto, limit):
    if isinstance(limit, int):
       limit = "--cpu-limit=%s" % limit
    else:
@@ -17,17 +17,19 @@ def run(f_problem, proto, limit, f_out=None):
       (t,p) = (int(t), int(p))
       limit = "--cpu-limit=%s --processed-clauses-limit=%s" % (t,p)
    eargs = E_ARGS % limit
+   return "%s %s %s %s %s" % (PERF,E_BIN,eargs,proto,f_problem)
 
-   cmd = "%s %s %s %s %s" % (PERF,E_BIN,eargs,proto,f_problem)
+def run(f_problem, proto, limit, f_out=None):
+   cmd0 = cmd(f_problem, proto, limit)
    if f_out:
       out = file(f_out,"w")
-      subprocess.call(cmd, shell=True, stdout=out, stderr=STDOUT)
+      subprocess.call(cmd0, shell=True, stdout=out, stderr=STDOUT)
       out.close()
       return True
    else:
-      return subprocess.check_output(cmd, shell=True, stderr=STDOUT)
+      return subprocess.check_output(cmd0, shell=True, stderr=STDOUT)
 
 def cnf(f_problem):
-   cmd = "%s --tstp-format --free-numbers --cnf %s" % (E_BIN,f_problem)
-   return subprocess.check_output(cmd, shell=True, stderr=STDOUT)
+   cmd0 = "%s --tstp-format --free-numbers --cnf %s" % (E_BIN,f_problem)
+   return subprocess.check_output(cmd0, shell=True, stderr=STDOUT)
 

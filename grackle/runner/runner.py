@@ -20,7 +20,7 @@ class Runner(object):
       self.direct = direct
       self.cores = cores
 
-   def cmd(self, params, inst):
+   def cmd(self, params, inst, limit=None):
       pass
 
    def args(self, params):
@@ -60,7 +60,7 @@ class Runner(object):
       else:
          # when self.direct, then pass params directly (not by name)!
          params = c
-      cmd = self.cmd(params, inst)
+      cmd = self.cmd(params, inst, limit=limit)
       start = time.time()
       (status,out) = commands.getstatusoutput(cmd)
       end = time.time()
