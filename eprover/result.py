@@ -24,14 +24,19 @@ def value(strval):
          pass
    return strval
 
-def parse(f_out, trains=False):
+def parse(f_out, trains=False, out=None):
    result = {}
    result["STATUS"] = "Unknown"
    if trains:
       result["POS"] = []
       result["NEG"] = []
 
-   for line in file(f_out):
+   if f_out is not None:
+      out = file(f_out)
+   else:
+      out = out.strip().split("\n")
+
+   for line in out:
       line = line.rstrip()
       if line and (line[0] == "#" or line[0] == " "):
          for pat in PATS:
