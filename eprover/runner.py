@@ -10,12 +10,15 @@ E_ARGS = "%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-s
 def cmd(f_problem, proto, limit):
    if isinstance(limit, int):
       limit = "--cpu-limit=%s" % limit
-   else:
+   elif isinstance(limit, str) and "+" in limit:
       # otherwise limit format "Txxx+Cyyy"
       (t,p) = limit.split("+")
       (t,p) = (t[1:], p[1:])
       (t,p) = (int(t), int(p))
       limit = "--cpu-limit=%s --processed-clauses-limit=%s" % (t,p)
+   else:
+      raise Exception("Grackle: Unknown E limit for eprover.runner (%s)"%limit)
+
    eargs = E_ARGS % limit
    return "%s %s %s %s %s" % (PERF,E_BIN,eargs,proto,f_problem)
 

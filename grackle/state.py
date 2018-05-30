@@ -52,7 +52,7 @@ class DB:
 class State:
    def __init__(self, f_run):
       ini = file(f_run).read().strip().split("\n")
-      ini = [l.split("=") for l in ini]
+      ini = [l.split("=") for l in ini if l]
       ini = {x.strip():y.strip() for (x,y) in ini}
 
       self.it = 0          # int
@@ -90,6 +90,9 @@ class State:
       log.inits(self)
 
       self.trainer = _load_class(ini["trainer"])(runner, ini["runner"])
+      for x in ini:
+         if x.startswith("trainer."):
+            self.trainer.config[x[8:]] = int(ini[x]) if ini[x].isdigit() else ini[x]
 
    def did(self, conf, insts):
       for i in insts:

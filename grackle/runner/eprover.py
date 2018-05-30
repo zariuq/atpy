@@ -1,6 +1,6 @@
 import re
 import sha
-from os import path, system
+from os import path, system, getenv
 
 from .runner import Runner
 from atpy import eprover
@@ -25,9 +25,14 @@ class EproverRunner(Runner):
       self.conf_dir = "confs"
       system("mkdir -p %s" % self.conf_dir)
 
-   def cmd(self, params, inst, limit=None):
+   def cmd(self, params, inst):
       args = self.args(params)
-      return eprover.runner.cmd(inst, args, limit)
+      d_root = getenv("TPTP_PROBLEMS_DIR", ".")
+      (f_inst,limit) = inst.split("@")
+      if limit[0] != "T":
+         raise Exception("EproverRunner: Unsupported instance limit (%s)" % limit)
+      limit = int(limit[1:])
+      return eprover.runner.cmd(path.join(d_root,f_inst), args, limit)
    
    def args(self, params):
       eargs = dict(params)

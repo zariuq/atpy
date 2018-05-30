@@ -20,7 +20,7 @@ class Runner(object):
       self.direct = direct
       self.cores = cores
 
-   def cmd(self, params, inst, limit=None):
+   def cmd(self, params, inst):
       pass
 
    def args(self, params):
@@ -54,18 +54,18 @@ class Runner(object):
          ps[key] = val
       return ps
    
-   def run(self, c, inst, limit=None):
+   def run(self, c, inst):
       if not self.direct:
          params = self.recall(c)
       else:
          # when self.direct, then pass params directly (not by name)!
          params = c
-      cmd = self.cmd(params, inst, limit=limit)
+      cmd = self.cmd(params, inst)
       start = time.time()
       (status,out) = commands.getstatusoutput(cmd)
       end = time.time()
       if status != 0:
-         print "GRACKLE: Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+         print "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
          return None
       
       quality = self.quality(out) or 1000000000
@@ -76,7 +76,7 @@ class Runner(object):
       pool = multiprocessing.Pool(self.cores)
       results = pool.map(wrapper, zip([self]*len(cis),cis))
       if None in results:
-         log.error("GRACKLE: Error: Evaluation failed, see above for more info.")
+         log.error("ERROR(Grackle): Evaluation failed, see above for more info.")
          sys.exit(-1)
       return zip(cis, results)
    
