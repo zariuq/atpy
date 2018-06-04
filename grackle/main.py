@@ -10,6 +10,7 @@ def evaluate(state, db, confs):
    db.update(confs)
    if state.it == 1:
       db.save("init")
+   log.status(db)
 
 def reduction(state):
    mastered = {c:state.evals.mastered(c) for c in state.alls}

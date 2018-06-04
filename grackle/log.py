@@ -1,3 +1,6 @@
+import os
+
+FATAL_LOG = os.path.join(os.getenv("HOME"),"grackle-errors.log")
 
 def active(state, mastered):
    print "> ACTIVE CONFIGURATIONS: %d" % len(state.active)
@@ -27,6 +30,9 @@ def iter(state):
 
 def update(db, confs):
    print "> Evaluating %d configurations on %s." % (len(confs), db.name)
+
+def status(db):
+   print "> STATUS %s: %d" % (db.name, len(db.status()))
 
 def candidates(candidates, avgs):
    print "TRAINING CANDIDATES:"
@@ -87,4 +93,10 @@ def msg(m):
 
 def error(m):
    print m
+
+def fatal(m):
+   error(m)
+   f = file(FATAL_LOG, "a")
+   f.write(m)
+   f.close()
 

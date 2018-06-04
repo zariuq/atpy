@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import sha
@@ -10,7 +11,7 @@ from .. import log
 def wrapper(args):
    (runner, (x, inst)) = args
    return runner.run(x, inst)
-
+         
 class Runner(object):
    PERF = "perf stat -e task-clock:up,page-faults:up,instructions:up"
    CLOCK = re.compile(r"(\d*\.\d*)\s*task-clock:up")
@@ -19,8 +20,9 @@ class Runner(object):
    def __init__(self, direct, cores=4):
       self.direct = direct
       self.cores = cores
+      self.config = {}
 
-   def cmd(self, params, inst):
+   def cmd(self, params, inst, limit=None):
       pass
 
    def args(self, params):
@@ -54,18 +56,19 @@ class Runner(object):
          ps[key] = val
       return ps
    
-   def run(self, c, inst):
+   def run(self, c, inst, limit=None, extra=None):
       if not self.direct:
          params = self.recall(c)
       else:
          # when self.direct, then pass params directly (not by name)!
          params = c
-      cmd = self.cmd(params, inst)
+      cmd = self.cmd(params, inst, limit=limit)
       start = time.time()
       (status,out) = commands.getstatusoutput(cmd)
       end = time.time()
       if status != 0:
-         print "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+         msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+         log.fatal(msg)
          return None
       
       quality = self.quality(out) or 1000000000
@@ -76,7 +79,7 @@ class Runner(object):
       pool = multiprocessing.Pool(self.cores)
       results = pool.map(wrapper, zip([self]*len(cis),cis))
       if None in results:
-         log.error("ERROR(Grackle): Evaluation failed, see above for more info.")
+         log.fatal("ERROR(Grackle): Evaluation failed, see above for more info.")
          sys.exit(-1)
       return zip(cis, results)
-   
+

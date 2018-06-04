@@ -23,15 +23,17 @@ class EproverRunner(Runner):
       Runner.__init__(self, direct, cores)
       self.conf_prefix = "conf_eprover_"
       self.conf_dir = "confs"
-      system("mkdir -p %s" % self.conf_dir)
+      if not direct:
+         system("mkdir -p %s" % self.conf_dir)
 
-   def cmd(self, params, inst):
+   def cmd(self, params, inst, limit=None):
       args = self.args(params)
       d_root = getenv("TPTP_PROBLEMS_DIR", ".")
-      (f_inst,limit) = inst.split("@")
-      if limit[0] != "T":
+      (f_inst,s_limit) = inst.split("@")
+      if s_limit[0] != "T":
          raise Exception("EproverRunner: Unsupported instance limit (%s)" % limit)
-      limit = int(limit[1:])
+      if not limit:
+         limit = int(s_limit[1:])
       return eprover.runner.cmd(path.join(d_root,f_inst), args, limit)
    
    def args(self, params):
@@ -70,7 +72,8 @@ class EproverRunner(Runner):
    def quality(self, out):
       result = eprover.result.parse(None, out=out)
       if eprover.result.solved(result):
-         return result["MILINS"] if "MILINS" in result else None
+         #return result["MILINS"] if "MILINS" in result else None
+         return result["PROCESSED"] if "PROCESSED" in result else None
       else:
          return 1000000
 
@@ -106,8 +109,13 @@ class EproverRunner(Runner):
             n = int(param.lstrip("freqcef"))
             if n >= slots:
                delete.append(param)
+      
+      if "sine" in params and params["sine"] == "0":
+         delete.extend(["sineL", "sineR", "sinegf", "sineh"])
+      
       for param in delete:
-         del params[param]
+         if param in params:
+            del params[param]
 
       return params
 

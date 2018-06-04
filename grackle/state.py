@@ -49,6 +49,20 @@ class DB:
    def mastered(self, conf):
       return [i for i in self.insts if conf in self.ranking[i][:self.rank]]
 
+   def status(self, failed=1000000):
+      success = set([])
+      for conf in self.results:
+         for inst in self.results[conf]:
+            if self.results[conf][inst][0] != failed:
+               success.add(inst)
+      return success
+
+def copy_conf(ini, config, prefix):
+   for x in ini:
+      if x.startswith(prefix):
+         ix = ini[x]
+         config[x[len(prefix):]] = int(ix) if ix.isdigit() else ix
+
 class State:
    def __init__(self, f_run):
       ini = file(f_run).read().strip().split("\n")
@@ -67,13 +81,17 @@ class State:
       if self.train_limit < 0:
          self.train_limit = None
 
-      runner = _load_class(ini["runner"])(False, self.cores)
+      t_runner = _load_class(ini["runner"])(False, self.cores)
+      e_runner = _load_class(ini["runner"])(False, self.cores)
+      copy_conf(ini, t_runner.config, "runner.trains.")
+      copy_conf(ini, e_runner.config, "runner.evals.")
+
       self.evals = DB("evals", self.rank)
-      self.evals.runner = runner
+      self.evals.runner = e_runner
       self.evals.insts = file(ini["evals"]).read().strip().split("\n")
       self.evals.insts = [x.strip() for x in self.evals.insts]
       self.trains = DB("trains", self.rank)
-      self.trains.runner = runner
+      self.trains.runner = t_runner
       self.trains.insts = file(ini["trains"]).read().strip().split("\n")
       self.trains.insts = [x.strip() for x in self.trains.insts]
       self.attention = {i:0.0 for i in self.trains.insts}
@@ -82,17 +100,15 @@ class State:
       self.alls = []
       inits = file(ini["inits"]).read().strip().split("\n")
       for f_init in inits:
-         params = runner.params(file(f_init).read().strip().split())
-         params = runner.clean(params)
-         init = runner.name(params)
+         params = t_runner.params(file(f_init).read().strip().split())
+         params = t_runner.clean(params)
+         init = t_runner.name(params)
          self.alls.append(init)
          log.init(self, f_init, init)
       log.inits(self)
 
-      self.trainer = _load_class(ini["trainer"])(runner, ini["runner"])
-      for x in ini:
-         if x.startswith("trainer."):
-            self.trainer.config[x[8:]] = int(ini[x]) if ini[x].isdigit() else ini[x]
+      self.trainer = _load_class(ini["trainer"])(t_runner, ini["runner"])
+      copy_conf(ini, self.trainer.config, "trainer.")
 
    def did(self, conf, insts):
       for i in insts:
