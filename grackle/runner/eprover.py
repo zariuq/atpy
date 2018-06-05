@@ -26,7 +26,7 @@ class EproverRunner(Runner):
       if not direct:
          system("mkdir -p %s" % self.conf_dir)
 
-   def cmd(self, params, inst, limit=None):
+   def cmd(self, params, inst, limit=None, extra=None):
       args = self.args(params)
       d_root = getenv("TPTP_PROBLEMS_DIR", ".")
       (f_inst,s_limit) = inst.split("@")

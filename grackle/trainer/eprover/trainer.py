@@ -1,6 +1,8 @@
+import json
 from os import path, system
 from ..trainer import Trainer
 from . import tuner
+from atpy.grackle import log
 
 class EproverTrainer(Trainer):
    def __init__(self, runner, cls):
@@ -12,7 +14,7 @@ class EproverTrainer(Trainer):
       timeout = self.config["timeout"]
       algo = "grackle-wrapper.py %s" % tuner_cls
       if extra:
-         algo += " EXTRA %s" % extra
+         algo += " EXTRA %s" % repr(json.dumps(extra))
       scenario = tuner.SCENARIO % (algo, cutoff, timeout)
       return tuner.launch(scenario, domains, init, insts, cwd, timeout, cores)
 
@@ -20,15 +22,18 @@ class EproverTrainer(Trainer):
       params = self.runner.clean(params)
       return self.runner.name(params) 
 
-class EproverStageTrainer(EproverTrainer):
+class StageTrainer(EproverTrainer):
    def __init__(self, runner, cls, tuners):
       EproverTrainer.__init__(self, runner, cls)
       self.tuners = tuners
 
    def improve(self, state, conf, insts):
       params = self.runner.recall(conf)
+      i = 1
       for tuner in self.tuners:
+         log.tuner(tuner.nick, i, len(self.tuners))
          params = self.stage(state, conf, tuner, params, insts)
+         i += 1
       return self.finish(params)
 
    def stage(self, state, conf, tuner, params, insts):
@@ -38,8 +43,13 @@ class EproverStageTrainer(EproverTrainer):
       main = self.tune(tuner.cls, domains, main, insts, cwd, state.cores, extra=extra)
       return tuner.join(main, extra)
       
-class EproverSimpleTrainer(EproverStageTrainer):
+class BaseTrainer(StageTrainer):
    def __init__(self, runner, cls):
-      EproverStageTrainer.__init__(self, runner, cls, [tuner.BASE])
+      StageTrainer.__init__(self, runner, cls, [tuner.BASE("00-base")])
 
+class BaseFineTrainer(StageTrainer):
+   def __init__(self, runner, cls):
+      StageTrainer.__init__(self, runner, cls, [
+         tuner.BASE("00-base"), 
+         tuner.FINE("01-fine")])
 

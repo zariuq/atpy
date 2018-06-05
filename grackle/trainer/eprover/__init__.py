@@ -1,4 +1,4 @@
 import trainer
 
-from trainer import EproverSimpleTrainer
+from trainer import BaseTrainer, BaseFineTrainer
 

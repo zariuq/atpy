@@ -51,7 +51,7 @@ def launch(scenario, domains, init, insts, cwd, timeout, cores):
 
 class Tuner(EproverRunner):
    def __init__(self, direct, cores, nick, cls):
-      EproverRunner.__init__(self, direct)
+      EproverRunner.__init__(self, direct, cores=cores)
       self.nick = nick
       self.cls = cls
 
@@ -63,10 +63,15 @@ class Tuner(EproverRunner):
 
    def domains(self, config, init=None):
       pass
+   
+   def cmd(self, params, inst, limit=None, extra=None):
+      params = self.join(params, extra)
+      return EproverRunner.cmd(self, params, inst, limit=limit)
 
 class BaseTuner(Tuner):
-   def __init__(self, direct, cores=4):
-      Tuner.__init__(self, direct, cores, "0-base", "atpy.grackle.trainer.eprover.tuner.BaseTuner")
+   def __init__(self, direct, cores=4, nick="0-base"):
+      Tuner.__init__(self, direct, cores, nick, 
+         "atpy.grackle.trainer.eprover.tuner.BaseTuner")
 
    def split(self, params):
       return (params, None)
@@ -77,5 +82,27 @@ class BaseTuner(Tuner):
    def domains(self, config, init=None):
       return domain.base(config, init=init)
 
-BASE = BaseTuner(True, 1)
+class FineTuner(Tuner):
+   def __init__(self, direct, cores=4, nick="1-fine"):
+      Tuner.__init__(self, direct, cores, nick, 
+         "atpy.grackle.trainer.eprover.tuner.FineTuner")
+
+   def split(self, params):
+      main = domain.fine_main(params)
+      extra = {x:params[x] for x in params if not x.startswith("cef")}
+      weights = {x:params[x].split("__")[0] for  x in params if x.startswith("cef")}
+      extra.update(weights)
+      return (main, extra)
+
+   def join(self, main, extra):
+      cefs = domain.fine_cefs(main, extra)
+      params = dict(extra)
+      params.update(cefs)
+      return params
+
+   def domains(self, config, init=None):
+      return domain.fine(init)
+
+BASE = lambda nick: BaseTuner(True, 1, nick)
+FINE = lambda nick: FineTuner(True, 1, nick)
 

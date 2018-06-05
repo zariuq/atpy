@@ -99,6 +99,8 @@ def cefs_domain(count, cefs):
          cef = bests.pop(0)[1]
          ret.append(cef)
 
+
+
 def base_params(config, cefs):
    pars = ""
    slots = ",".join(map(str, range(config["min_slots"], config["max_slots"]+1)))
@@ -140,22 +142,47 @@ def base(config, init=None):
           BASE_FORBIDDENS + base_forbiddens(config, cefs)
 
 
-def fine_params_cef(cef, prefix):
+
+def fine_args(cef, prefix):
    wargs = cef.replace("_M_","-").replace("_D_",".").split("__")
    weight = wargs.pop(0)
    argtyps = [x.split(":") for x in WEIGHTS[weight].split(" ") if x]
-   args = ""
+   args = []
    for (arg,typ) in argtyps:
       dom = DOMAIN[typ]
       default = wargs.pop(0)
-      args += "   %s {%s} [%s]\n" % (prefix+arg,dom,default)
+      args += [(prefix+arg,dom,default)]
    return args
 
-def fine(config, params):
+def fine_main(params):
+   main = {}
+   slots = int(params["slots"])
+   for i in range(slots):
+      args = fine_args(params["cef%d"%i], "cef%d_"%i)
+      for (name,dom,default) in args:
+         main[name] = default
+   return main
+
+def fine_cef(weight, main, key):
+   args = [x.split(":")[0] for x in WEIGHTS[weight].split(" ")]
+   args = [main["%s_%s"%(key,x)] for x in args]
+   return "%s(%s)" % (weight, ",".join(args))
+
+def fine_cefs(main, extra):
+   cefs = {}
+   slots = int(extra["slots"])
+   for i in range(slots):
+      key = "cef%d"%i
+      cef = fine_cef(extra[key], main, key) 
+      cefs[key] = cef2block(cef)
+   return cefs
+
+def fine(params):
    slots = int(params["slots"])
    args = ""
    for i in range(slots):
       args += "# %s\n" % params["cef%d"%i] # just a comment
-      args += fine_params_cef(params["cef%d"%i], "cef%d_"%i)
+      for arg in fine_args(params["cef%d"%i], "cef%d_"%i):
+         args += "   %s {%s} [%s]\n" % arg
    return args
 

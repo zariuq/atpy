@@ -19,9 +19,7 @@ def run_reparamils(scenariofile, outdir, cwd, binary="param_ils_2_3_run.rb", cou
    elder = (None,None,None)
    it = 1
    log = ""
-   print 
    print ">> --- TRAIN ITER %d ---" % it
-   print
    start = time.time()
    if time_limit:
       end = time.time() + time_limit
@@ -76,13 +74,11 @@ def run_reparamils(scenariofile, outdir, cwd, binary="param_ils_2_3_run.rb", cou
       sys.stdout.flush()
 
       if time.time() > end:
-         print
          elder = winner
          break
 
       if elder[0] is not None and int(1000*winner[1]) >= int(1000*elder[1]):
          print ">> no improvement. terminating."
-         print
          sys.stdout.flush()
          elder = winner
          break
@@ -113,9 +109,7 @@ def run_reparamils(scenariofile, outdir, cwd, binary="param_ils_2_3_run.rb", cou
       fresh += (count-1)
       elder = winner
       it += 1
-      print  
       print ">> --- TRAIN ITER %d ---" % it
-      print
       sys.stdout.flush()
       iter_start = time.time()
       adult = False

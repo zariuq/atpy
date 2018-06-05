@@ -88,6 +88,10 @@ def scenario(state, ini):
    print "> Loaded %d evals" % len(state.evals.insts)
    print "> Loaded %d trains" % len(state.trains.insts)
 
+def tuner(nick, i, n):
+   print ">>"
+   print ">> === TUNER[%d/%d]: %s ===" % (i,n,nick)
+
 def msg(m):
    print m
 
