@@ -43,7 +43,8 @@ class DB:
    def update_ranking(self, confs):
       self.ranking = {}
       for inst in self.insts:
-         key = lambda conf: self.results[conf][inst][0]
+         #key = lambda conf: self.results[conf][inst][0]
+         key = lambda conf: (self.results[conf][inst][0], conf)
          self.ranking[inst] = sorted(confs, key=key)
 
    def mastered(self, conf):
