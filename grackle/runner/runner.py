@@ -67,7 +67,7 @@ class Runner(object):
       (status,out) = commands.getstatusoutput(cmd)
       end = time.time()
       if status != 0:
-         msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+         msg = "\nERROR(Grackle): Error (%s) while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(status,c,inst,cmd,out)
          log.fatal(msg)
          return None
       
