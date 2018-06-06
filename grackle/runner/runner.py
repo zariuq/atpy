@@ -71,7 +71,7 @@ class Runner(object):
          log.fatal(msg)
          return None
       
-      quality = self.quality(out) or 1000000000
+      quality = self.quality(out) or 1000000
       clock = self.clock(out) or (end-start)
       return [quality,clock]
 

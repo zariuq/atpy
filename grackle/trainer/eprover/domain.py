@@ -22,10 +22,11 @@ DOMAIN = {
    "real": "0,0.1,0.5,1,5,10,100,9999.9",
 }
 
+# prord {arity,invfreq,invfreqconstmin} [invfreqconstmin]
+# tord {Auto,LPO4,KBO6} [LPO4]
+
 BASE_PARAMS = """
-   tord {Auto,LPO4,KBO6} [LPO4]
    sel {SelectMaxLComplexAvoidPosPred,SelectNewComplexAHP,SelectComplexG,SelectCQPrecWNTNp} [SelectMaxLComplexAvoidPosPred]
-   prord {arity,invfreq,invfreqconstmin} [invfreqconstmin]
    simparamod {none,normal,oriented} [normal]
    srd {0,1} [0]
    forwardcntxtsr {0,1} [1]
@@ -70,6 +71,19 @@ WEIGHTS = {
    "ConjectureTreeDistanceWeight":     "prio:prio var:var rel:rel ins:cost del:cost ch:cost ext:ext maxt:mult maxl:mult pos:mult",
    "ConjectureStrucDistanceWeight":    "prio:prio var:var rel:rel varmis:real symmis:real inst:real gen:real ext:ext maxt:mult maxl:mult pos:mult",
 }
+
+ORDER_PARAMS = """
+   tord {Auto,LPO4,KBO6} [LPO4]
+   tord_prec {unary_first,unary_freq,arity,invarity,const_max,const_min,freq,invfreq,invconjfreq,invfreqconjmax,invfreqconjmin,invfreqconstmin} [arity]
+   tord_weight {firstmaximal0,arity,aritymax0,modarity,modaritymax0,aritysquared,aritysquaredmax0,invarity,invaritymax0,invaritysquared,invaritysquaredmax0,precedence,invprecedence,precrank5,precrank10,precrank20,freqcount,invfreqcount,freqrank,invfreqrank,invconjfreqrank,freqranksquare,invfreqranksquare,invmodfreqrank,invmodfreqrankmax0,constant} [arity]
+   tord_const {0,1} [0]
+"""
+
+ORDER_CONDITIONS = """
+   tord_prec   | tord in {LPO4,KBO6}
+   tord_weight | tord in {KBO6}
+   tord_const  | tord in {KBO6}
+"""
 
 def cefs_load(f_cefs):
    return json.load(file(f_cefs))
@@ -186,3 +200,7 @@ def fine(params):
          args += "   %s {%s} [%s]\n" % arg
    return args
 
+
+
+def order():
+   return ORDER_PARAMS + ORDER_CONDITIONS 

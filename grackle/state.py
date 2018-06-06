@@ -50,12 +50,19 @@ class DB:
       return [i for i in self.insts if conf in self.ranking[i][:self.rank]]
 
    def status(self, failed=1000000):
-      success = set([])
+      total = 0
+      qsum = 0.0
+      tsum = 0.0
+      success = set()
       for conf in self.results:
-         for inst in self.results[conf]:
-            if self.results[conf][inst][0] != failed:
+         for inst in self.insts:
+            result = self.results[conf][inst]
+            qsum += result[0]
+            tsum += result[1]
+            total += 1
+            if result[0] != failed:
                success.add(inst)
-      return success
+      return (self.name, len(success), qsum/total, tsum/total)
 
 def copy_conf(ini, config, prefix):
    for x in ini:

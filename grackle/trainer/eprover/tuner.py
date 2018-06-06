@@ -1,6 +1,6 @@
 from os import system, path
 from atpy import paramils
-from atpy.grackle.runner.eprover import EproverRunner
+from atpy.grackle.runner.eprover import EproverRunner, convert
 from . import domain
 
 
@@ -74,16 +74,40 @@ class BaseTuner(Tuner):
          "atpy.grackle.trainer.eprover.tuner.BaseTuner")
 
    def split(self, params):
-      return (params, None)
+      params = convert(params)
+      main = {x:params[x] for x in params if not x.startswith("tord")}
+      extra = {x:params[x] for x in params if x.startswith("tord")}
+      return (main, extra)
 
    def join(self, main, extra):
-      return main
+      params = dict(main)
+      params.update(extra)
+      return params
 
    def domains(self, config, init=None):
       return domain.base(config, init=init)
 
+class OrderTuner(Tuner):
+   def __init__(self, direct, cores=4, nick="1-order"):
+      Tuner.__init__(self, direct, cores, nick, 
+         "atpy.grackle.trainer.eprover.tuner.OrderTuner")
+
+   def split(self, params):
+      params = convert(params)
+      main = {x:params[x] for x in params if x.startswith("tord")}
+      extra = {x:params[x] for x in params if not x.startswith("tord")}
+      return (main, extra)
+
+   def join(self, main, extra):
+      params = dict(main)
+      params.update(extra)
+      return params
+
+   def domains(self, config, init=None):
+      return domain.order()
+
 class FineTuner(Tuner):
-   def __init__(self, direct, cores=4, nick="1-fine"):
+   def __init__(self, direct, cores=4, nick="2-fine"):
       Tuner.__init__(self, direct, cores, nick, 
          "atpy.grackle.trainer.eprover.tuner.FineTuner")
 
@@ -103,6 +127,7 @@ class FineTuner(Tuner):
    def domains(self, config, init=None):
       return domain.fine(init)
 
-BASE = lambda nick: BaseTuner(True, 1, nick)
-FINE = lambda nick: FineTuner(True, 1, nick)
+BASE  = lambda nick: BaseTuner(True, 1, nick)
+FINE  = lambda nick: FineTuner(True, 1, nick)
+ORDER = lambda nick: OrderTuner(True, 1, nick)
 
