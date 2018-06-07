@@ -40,11 +40,12 @@ class DB:
       # udpate ranking for each instance
       self.update_ranking(confs)
 
-   def update_ranking(self, confs):
+   def update_ranking(self, confs, failed=1000000):
       self.ranking = {}
       for inst in self.insts:
          key = lambda conf: self.results[conf][inst][0]
-         self.ranking[inst] = sorted(confs, key=key)
+         oks = [c for c in confs if self.results[c][inst][0] != failed]
+         self.ranking[inst] = sorted(oks, key=key)
 
    def mastered(self, conf):
       return [i for i in self.insts if conf in self.ranking[i][:self.rank]]

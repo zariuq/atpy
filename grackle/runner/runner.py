@@ -64,15 +64,16 @@ class Runner(object):
          params = c
       cmd = self.cmd(params, inst, limit=limit, extra=extra)
       start = time.time()
-      (status,out) = commands.getstatusoutput(cmd)
+      out = commands.getoutput(cmd)
       end = time.time()
-      if status != 0:
+      
+      quality = self.quality(out) 
+      if not quality:
          msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
          log.fatal(msg)
          return None
-      
-      quality = self.quality(out) or 1000000000
       clock = self.clock(out) or (end-start)
+
       return [quality,clock]
 
    def runs(self, cis):
