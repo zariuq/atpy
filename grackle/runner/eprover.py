@@ -18,6 +18,17 @@ def block2cef(block):
     parts = block.replace("_M_","-").replace("_D_",".").split("__")
     return "%s(%s)" % (parts[0],  ",".join(parts[1:]))
 
+def convert(params):
+   # conversion from old version
+   if "prord" in params:
+      params = dict(params)
+      params["tord_prec"] = params["prord"]
+      if params["tord"] == "KBO6":
+         params["tord_weight"] = "invfreqrank"
+         params["tord_const"] = "1"
+      del params["prord"]
+   return params
+
 class EproverRunner(Runner):
    def __init__(self, direct=True, cores=4):
       Runner.__init__(self, direct, cores)
@@ -38,6 +49,7 @@ class EproverRunner(Runner):
    
    def args(self, params):
       eargs = dict(params)
+      eargs = convert(eargs)
       # default params
       eargs["splaggr"] = "--split-aggressive" if eargs["splaggr"] == "1" else ""
       eargs["srd"] = "--split-reuse-defs" if eargs["srd"] == "1" else ""
@@ -49,10 +61,19 @@ class EproverRunner(Runner):
          eargs["simparamod"] = "--oriented-simul-paramod"
       else:
          eargs["simparamod"] = "--simul-paramod"
-      if eargs["prord"] == "invfreq":
-         eargs["prord"] = "-winvfreqrank -c1 -Ginvfreq"
+      # term ordering
+      #if eargs["prord"] == "invfreq":
+      #   eargs["prord"] = "-winvfreqrank -c1 -Ginvfreq"
+      #else:
+      #   eargs["prord"] = "-G" + eargs["prord"]
+      if eargs["tord"] == "KBO6":
+         eargs["prord"] = "-G%(tord_prec)s -w%(tord_weight)s" % eargs
+         if eargs["tord_const"] != "0":
+            eargs["prord"] += " -c%(tord_const)s" % eargs
+      elif eargs["tord"] == "LPO4":
+         eargs["prord"] = "-G%(tord_prec)s" % eargs
       else:
-         eargs["prord"] = "-G" + eargs["prord"]
+         eargs["prord"] = ""
       # SinE
       if eargs["sine"] == "1":
          eargs["sineh"] = "" if eargs["sineh"] == "none" else eargs["sineh"]
@@ -112,6 +133,12 @@ class EproverRunner(Runner):
       
       if "sine" in params and params["sine"] == "0":
          delete.extend(["sineL", "sineR", "sinegf", "sineh"])
+
+      if "prord" not in params:
+         if params["tord"] == "Auto":
+            delete.extend(["tord_prec", "tord_weight", "tord_const"])
+         elif params["tord"] == "LPO4":
+            delete.extend(["tord_weight", "tord_const"])
       
       for param in delete:
          if param in params:

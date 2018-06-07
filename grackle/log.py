@@ -32,7 +32,7 @@ def update(db, confs):
    print "> Evaluating %d configurations on %s." % (len(confs), db.name)
 
 def status(db):
-   print "> STATUS %s: %d" % (db.name, len(db.status()))
+   print "> STATUS %s: %s, %.2f, %.4f" % db.status()
 
 def candidates(candidates, avgs):
    print "TRAINING CANDIDATES:"
