@@ -1,4 +1,5 @@
 import json
+import time
 from os import path
 from . import _load_class, log
 
@@ -73,6 +74,8 @@ def copy_conf(ini, config, prefix):
 
 class State:
    def __init__(self, f_run):
+      self.start_time = time.time()
+
       ini = file(f_run).read().strip().split("\n")
       ini = [l.split("=") for l in ini if l]
       ini = {x.strip():y.strip() for (x,y) in ini}

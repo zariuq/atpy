@@ -1,4 +1,5 @@
 import os
+import time
 
 FATAL_LOG = os.path.join(os.getenv("HOME"),"grackle-errors.log")
 
@@ -31,8 +32,9 @@ def iter(state):
 def update(db, confs):
    print "> Evaluating %d configurations on %s." % (len(confs), db.name)
 
-def status(db):
-   print "> STATUS %s: %s, %.2f, %.4f" % db.status()
+def status(state, db):
+   runtime = (time.time() - state.start_time) / 60
+   print "> STATUS @ %d (%s): %s, %.2f, %.4f" % ((runtime,)+db.status())
 
 def candidates(candidates, avgs):
    print "TRAINING CANDIDATES:"
