@@ -40,12 +40,7 @@ class EproverRunner(Runner):
    def cmd(self, params, inst, limit=None, extra=None):
       args = self.args(params)
       d_root = getenv("TPTP_PROBLEMS_DIR", ".")
-      (f_inst,s_limit) = inst.split("@")
-      if s_limit[0] != "T":
-         raise Exception("EproverRunner: Unsupported instance limit (%s)" % limit)
-      if not limit:
-         limit = int(s_limit[1:])
-      return eprover.runner.cmd(path.join(d_root,f_inst), args, limit)
+      return eprover.runner.cmd(path.join(d_root,inst), args, limit)
    
    def args(self, params):
       eargs = dict(params)

@@ -10,7 +10,8 @@ from .. import log
 
 def wrapper(args):
    (runner, (x, inst)) = args
-   return runner.run(x, inst)
+   limit = runner.config["cutoff"] if "cutoff" in runner.config else None
+   return runner.run(x, inst, limit=limit)
          
 class Runner(object):
    PERF = "perf stat -e task-clock:up,page-faults:up,instructions:up"
