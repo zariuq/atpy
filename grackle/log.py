@@ -79,8 +79,11 @@ def scenario(state, ini):
    print "> best = %s" % state.best
    print "> tops = %s" % state.tops
    print "> rank = %s" % state.rank
-   print "> evals = %s" % ini["evals"]
    print "> trains = %s" % ini["trains"]
+   if "evals" in ini:
+      print "> evals = %s" % ini["evals"]
+   else:
+      print "> evals = &trains"
    print "> inits = %s" % ini["inits"]
    print "> runner = %s" % ini["runner"]
    print "> trainer = %s" % ini["trainer"]

@@ -90,18 +90,22 @@ class State:
          self.train_limit = None
 
       t_runner = _load_class(ini["runner"])(False, self.cores)
-      e_runner = _load_class(ini["runner"])(False, self.cores)
       copy_conf(ini, t_runner.config, "runner.trains.")
-      copy_conf(ini, e_runner.config, "runner.evals.")
-
-      self.evals = DB("evals", self.rank)
-      self.evals.runner = e_runner
-      self.evals.insts = file(ini["evals"]).read().strip().split("\n")
-      self.evals.insts = [x.strip() for x in self.evals.insts]
       self.trains = DB("trains", self.rank)
       self.trains.runner = t_runner
       self.trains.insts = file(ini["trains"]).read().strip().split("\n")
       self.trains.insts = [x.strip() for x in self.trains.insts]
+
+      if "evals" in ini:
+         e_runner = _load_class(ini["runner"])(False, self.cores)
+         copy_conf(ini, e_runner.config, "runner.evals.")
+         self.evals = DB("evals", self.rank)
+         self.evals.runner = e_runner
+         self.evals.insts = file(ini["evals"]).read().strip().split("\n")
+         self.evals.insts = [x.strip() for x in self.evals.insts]
+      else:
+         self.evals = self.trains
+
       self.attention = {i:0.0 for i in self.trains.insts}
       log.scenario(self, ini)
 
