@@ -1,6 +1,6 @@
 from os import system, path
 from atpy import paramils
-from atpy.grackle.runner.eprover import EproverRunner, convert
+from atpy.grackle.runner.eprover import EproverRunner, convert, SINE_DEFAULTS
 from . import domain
 
 
@@ -87,6 +87,46 @@ class BaseTuner(Tuner):
    def domains(self, config, init=None):
       return domain.base(config, init=init)
 
+class GlobalTuner(Tuner):
+   def __init__(self, direct, cores=4, nick="0-global"):
+      Tuner.__init__(self, direct, cores, nick, 
+         "atpy.grackle.trainer.eprover.tuner.GlobalTuner")
+
+   def split(self, params):
+      main = {x:params[x] for x in params if not x.startswith("sine")}
+      extra = {x:params[x] for x in params if x.startswith("sine")}
+      return (main, extra)
+
+   def join(self, main, extra):
+      params = dict(main)
+      params.update(extra)
+      return params
+
+   def domains(self, config, init=None):
+      return domain.glob(config, init=init)
+
+class SineTuner(Tuner):
+   def __init__(self, direct, cores=4, nick="0-sine"):
+      Tuner.__init__(self, direct, cores, nick, 
+         "atpy.grackle.trainer.eprover.tuner.SineTuner")
+
+   def split(self, params):
+      params = convert(params)
+      main = dict(SINE_DEFAULTS)
+      main.update({x:params[x] for x in params if x.startswith("sine")})
+      del main["sine"]
+      extra = {x:params[x] for x in params if not x.startswith("sine")}
+      return (main, extra)
+
+   def join(self, main, extra):
+      params = dict(main)
+      params.update(extra)
+      params["sine"] = "1"
+      return params
+
+   def domains(self, config, init=None):
+      return domain.sine()
+
 class OrderTuner(Tuner):
    def __init__(self, direct, cores=4, nick="1-order"):
       Tuner.__init__(self, direct, cores, nick, 
@@ -127,7 +167,9 @@ class FineTuner(Tuner):
    def domains(self, config, init=None):
       return domain.fine(init)
 
+GLOBAL = lambda nick: GlobalTuner(True, 1, nick)
 BASE  = lambda nick: BaseTuner(True, 1, nick)
 FINE  = lambda nick: FineTuner(True, 1, nick)
+SINE = lambda nick: SineTuner(True, 1, nick)
 ORDER = lambda nick: OrderTuner(True, 1, nick)
 

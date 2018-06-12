@@ -79,7 +79,12 @@ class Runner(object):
 
    def runs(self, cis):
       pool = multiprocessing.Pool(self.cores)
-      results = pool.map(wrapper, zip([self]*len(cis),cis))
+      try:
+         results = pool.map(wrapper, zip([self]*len(cis),cis))
+      except Exception:
+         pool.terminate()
+      else:
+         pool.close()
       if None in results:
          log.fatal("ERROR(Grackle): Evaluation failed, see above for more info.")
          sys.exit(-1)

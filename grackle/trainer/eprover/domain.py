@@ -32,18 +32,42 @@ BASE_PARAMS = """
    forwardcntxtsr {0,1} [1]
    splaggr {0,1} [1]
    splcl {0,4,7} [4]
-   sineL {10,20,40,60,80,100,500,20000} [100]
-   sineR {UU,01,02,03,04} [UU]
-   sinegf {1.1,1.2,1.4,1.5,2.0,5.0,6.0} [1.2]
-   sineh  {hypos,none} [hypos]
-   sine {0,1} [0]
 """
 
-BASE_CONDITIONS = """
-   sineL  | sine in {1}
-   sineR  | sine in {1}
-   sinegf | sine in {1}
-   sineh  | sine in {1}
+ORDER_PARAMS = """
+   tord {Auto,LPO4,KBO6} [LPO4]
+   tord_prec {unary_first,unary_freq,arity,invarity,const_max,const_min,freq,invfreq,invconjfreq,invfreqconjmax,invfreqconjmin,invfreqconstmin} [arity]
+   tord_weight {firstmaximal0,arity,aritymax0,modarity,modaritymax0,aritysquared,aritysquaredmax0,invarity,invaritymax0,invaritysquared,invaritysquaredmax0,precedence,invprecedence,precrank5,precrank10,precrank20,freqcount,invfreqcount,freqrank,invfreqrank,invconjfreqrank,freqranksquare,invfreqranksquare,invmodfreqrank,invmodfreqrankmax0,constant} [arity]
+   tord_const {0,1} [0]
+"""
+
+SINE_PARAMS = """
+   sineG {CountFormulas,CountTerms} [CountFormulas]
+   sineh {none,hypos} [hypos]
+   sinegf {1.1,1.2,1.4,1.5,2.0,5.0,6.0} [1.2]
+   sineD {none,1,3,10,20,40,160} [none]
+   sineR {none,01,02,03,04} [none]
+   sineL {10,20,40,60,80,100,500,20000} [100]
+   sineF {1.0,0.8,0.6} [1.0]
+"""
+
+#   sineL {10,20,40,60,80,100,500,20000} [100]
+#   sineR {UU,01,02,03,04} [UU]
+#   sinegf {1.1,1.2,1.4,1.5,2.0,5.0,6.0} [1.2]
+#   sineh  {hypos,none} [hypos]
+#   sine {0,1} [0]
+#   sineL  | sine in {1}
+#   sineR  | sine in {1}
+#   sinegf | sine in {1}
+#   sineh  | sine in {1}
+#"""
+
+BASE_CONDITIONS = ""
+
+ORDER_CONDITIONS = """
+   tord_prec   | tord in {LPO4,KBO6}
+   tord_weight | tord in {KBO6}
+   tord_const  | tord in {KBO6}
 """
 
 BASE_FORBIDDENS = ""
@@ -71,19 +95,6 @@ WEIGHTS = {
    "ConjectureTreeDistanceWeight":     "prio:prio var:var rel:rel ins:cost del:cost ch:cost ext:ext maxt:mult maxl:mult pos:mult",
    "ConjectureStrucDistanceWeight":    "prio:prio var:var rel:rel varmis:real symmis:real inst:real gen:real ext:ext maxt:mult maxl:mult pos:mult",
 }
-
-ORDER_PARAMS = """
-   tord {Auto,LPO4,KBO6} [LPO4]
-   tord_prec {unary_first,unary_freq,arity,invarity,const_max,const_min,freq,invfreq,invconjfreq,invfreqconjmax,invfreqconjmin,invfreqconstmin} [arity]
-   tord_weight {firstmaximal0,arity,aritymax0,modarity,modaritymax0,aritysquared,aritysquaredmax0,invarity,invaritymax0,invaritysquared,invaritysquaredmax0,precedence,invprecedence,precrank5,precrank10,precrank20,freqcount,invfreqcount,freqrank,invfreqrank,invconjfreqrank,freqranksquare,invfreqranksquare,invmodfreqrank,invmodfreqrankmax0,constant} [arity]
-   tord_const {0,1} [0]
-"""
-
-ORDER_CONDITIONS = """
-   tord_prec   | tord in {LPO4,KBO6}
-   tord_weight | tord in {KBO6}
-   tord_const  | tord in {KBO6}
-"""
 
 def cefs_load(f_cefs):
    return json.load(file(f_cefs))
@@ -157,6 +168,20 @@ def base(config, init=None):
 
 
 
+def glob(config, init=None):
+   cefs = cefs_load(config["cefs_db"])
+   cefs = map(cef2block, cefs_domain(config["cefs_count"], cefs))
+   if init:
+      for x in init:
+         if x.startswith("cef") and init[x] not in cefs:
+            cefs.append(init[x])
+
+   return BASE_PARAMS     + ORDER_PARAMS     + base_params(config, cefs) + \
+          BASE_CONDITIONS + ORDER_CONDITIONS + base_conditions(config) + \
+          BASE_FORBIDDENS + base_forbiddens(config, cefs)
+
+
+
 def fine_args(cef, prefix):
    wargs = cef.replace("_M_","-").replace("_D_",".").split("__")
    weight = wargs.pop(0)
@@ -204,3 +229,8 @@ def fine(params):
 
 def order():
    return ORDER_PARAMS + ORDER_CONDITIONS 
+
+
+
+def sine():
+   return SINE_PARAMS

@@ -7,7 +7,9 @@ from atpy import eprover
 
 E_PROTO_ARGS = "--definitional-cnf=24 %(splaggr)s %(splcl)s %(srd)s %(simparamod)s %(forwardcntxtsr)s --destructive-er-aggressive --destructive-er --prefer-initial-clauses -t%(tord)s %(prord)s -F1 --delete-bad-limit=150000000 -W%(sel)s %(sine)s %(heur)s"
       
-E_SINE_ARGS = "--sine='GSinE(CountFormulas,%(sineh)s,%(sinegf)s,,%(sineR)s,%(sineL)s,1.0)'"
+#E_SINE_ARGS = "--sine='GSinE(CountFormulas,%(sineh)s,%(sinegf)s,,%(sineR)s,%(sineL)s,1.0)'"
+
+E_SINE_ARGS = "--sine='GSinE(%(sineG)s,%(sineh)s,%(sinegf)s,%(sineD)s,%(sineR)s,%(sineL)s,%(sineF)s)'"
 
 def cef2block(cef):
    "Encode a CEF as a ParamILS string containg only [a-zA-Z0-9_]."
@@ -17,9 +19,19 @@ def block2cef(block):
     "Decode a CEF from a ParamILS string."
     parts = block.replace("_M_","-").replace("_D_",".").split("__")
     return "%s(%s)" % (parts[0],  ",".join(parts[1:]))
+   
+SINE_DEFAULTS = { 
+   "sineG": "CountFormulas", 
+   "sineh": "hypos", 
+   "sinegf": "1.2",
+   "sineD": "none", 
+   "sineR": "none", 
+   "sineL": "100",
+   "sineF": "1.0" 
+}
 
 def convert(params):
-   # conversion from old version
+   # conversion from old ordering version
    if "prord" in params:
       params = dict(params)
       params["tord_prec"] = params["prord"]
@@ -27,6 +39,16 @@ def convert(params):
          params["tord_weight"] = "invfreqrank"
          params["tord_const"] = "1"
       del params["prord"]
+   # handle old sine version
+   if "sine" in params and params["sine"] == "1":
+      if params["sineR"] == "UU":
+         params["sineR"] = "none" 
+      defaults = dict(SINE_DEFAULTS)
+      defaults.update(params)
+      params = defaults
+   else:
+      params["sine"] = "0"
+
    return params
 
 class EproverRunner(Runner):
@@ -71,8 +93,9 @@ class EproverRunner(Runner):
          eargs["prord"] = ""
       # SinE
       if eargs["sine"] == "1":
-         eargs["sineh"] = "" if eargs["sineh"] == "none" else eargs["sineh"]
-         eargs["sineR"] = "" if eargs["sineR"] == "UU" else eargs["sineR"]
+         for x in eargs:
+            if x.startswith("sine") and eargs[x] == "none":
+               eargs[x] = ""
          eargs["sine"] = E_SINE_ARGS % eargs
       else:
          eargs["sine"] = ""
@@ -127,7 +150,7 @@ class EproverRunner(Runner):
                delete.append(param)
       
       if "sine" in params and params["sine"] == "0":
-         delete.extend(["sineL", "sineR", "sinegf", "sineh"])
+         delete.extend(SINE_DEFAULTS)
 
       if "prord" not in params:
          if params["tord"] == "Auto":
