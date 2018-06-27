@@ -6,8 +6,10 @@ from os import path
 from . import log
 
 def evaluate(state, db, confs):
+   log.timestamp(state.start_time, "Evaluation started")
    log.update(db, confs)
    db.update(confs)
+   log.timestamp(state.start_time, "Evaluation done")
    if state.it == 1:
       db.save("init")
 
@@ -34,10 +36,12 @@ def select(state):
    return candidates
 
 def specialize(state, conf):
+   log.timestamp(state.start_time, "Specialization started")
    insts = state.trains.mastered(conf)
    log.improving(state, conf, insts)
    new = state.trainer.improve(state, conf, insts)
    state.did(conf, insts)
+   log.timestamp(state.start_time, "Specialization done")
    return new
 
 def improve(state, candidates):

@@ -26,6 +26,9 @@ class Runner(object):
    def cmd(self, params, inst, limit=None, extra=None):
       pass
 
+   def process(self, out, inst):
+      pass
+
    def args(self, params):
       return " ".join(["-%s %s"%(p,params[p]) for p in sorted(params)])
 
@@ -41,13 +44,13 @@ class Runner(object):
    def clean(self, params):
       return params
    
-   def quality(self, out):
-      mo = Runner.RESULT.search(out)
-      return mo.group(1) if mo else None
+   #def quality(self, out):
+   #   mo = Runner.RESULT.search(out)
+   #   return mo.group(1) if mo else None
 
-   def clock(self, out):
-      mo = Runner.CLOCK.search(out)
-      return mo.group(1) if mo else None
+   #def clock(self, out):
+   #   mo = Runner.CLOCK.search(out)
+   #   return mo.group(1) if mo else None
 
    def params(self, lst):
       ps = {}
@@ -68,21 +71,29 @@ class Runner(object):
       out = commands.getoutput(cmd)
       end = time.time()
       
-      quality = self.quality(out) 
-      if not quality:
+      #quality = self.quality(out) 
+      #if not quality:
+      #   msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+      #   log.fatal(msg)
+      #   return None
+      #clock = self.clock(out) or (end-start)
+
+      res = self.process(out, inst, limit)
+      if not res:
          msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
          log.fatal(msg)
          return None
-      clock = self.clock(out) or (end-start)
 
-      return [quality,clock]
+      return res
 
    def runs(self, cis):
       pool = multiprocessing.Pool(self.cores)
       try:
          results = pool.map(wrapper, zip([self]*len(cis),cis))
-      except Exception:
+      except Exception as err:
          pool.terminate()
+         log.fatal("ERROR(Grackle): Evaluation failed, see above for more info: %s" % str(err))
+         sys.exit(-1)
       else:
          pool.close()
       if None in results:

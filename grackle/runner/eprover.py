@@ -61,13 +61,13 @@ class EproverRunner(Runner):
 
    def cmd(self, params, inst, limit=None, extra=None):
       args = self.args(params)
-      d_root = getenv("TPTP_PROBLEMS_DIR", ".")
+      d_root = getenv("TPTP", ".") # probably not needed!
       return eprover.runner.cmd(path.join(d_root,inst), args, limit)
    
    def args(self, params):
       eargs = dict(params)
       eargs = convert(eargs)
-      # default params
+      # global params
       eargs["splaggr"] = "--split-aggressive" if eargs["splaggr"] == "1" else ""
       eargs["srd"] = "--split-reuse-defs" if eargs["srd"] == "1" else ""
       eargs["forwardcntxtsr"] = "--forward-context-sr" if eargs["forwardcntxtsr"] == "1" else ""
@@ -79,10 +79,6 @@ class EproverRunner(Runner):
       else:
          eargs["simparamod"] = "--simul-paramod"
       # term ordering
-      #if eargs["prord"] == "invfreq":
-      #   eargs["prord"] = "-winvfreqrank -c1 -Ginvfreq"
-      #else:
-      #   eargs["prord"] = "-G" + eargs["prord"]
       if eargs["tord"] == "KBO6":
          eargs["prord"] = "-G%(tord_prec)s -w%(tord_weight)s" % eargs
          if eargs["tord_const"] != "0":
@@ -108,18 +104,31 @@ class EproverRunner(Runner):
       eargs["heur"] = "-H'(%s)'" % ",".join(cefs)
       return E_PROTO_ARGS % eargs
    
-   def quality(self, out):
-      result = eprover.result.parse(None, out=out)
-      if eprover.result.solved(result):
-         #return result["MILINS"] if "MILINS" in result else None
-         return result["PROCESSED"] if "PROCESSED" in result else None
-      else:
-         return 1000000
+   #def quality(self, out):
+   #   result = eprover.result.parse(None, out=out)
+   #   if eprover.result.solved(result):
+   #      #return result["MILINS"] if "MILINS" in result else None
+   #      return result["PROCESSED"] if "PROCESSED" in result else None
+   #   elif eprover.result.error(result):
+   #      print out
+   #      return None
+   #   else:
+   #      return 1000000
 
-   def clock(self, out):
-      result = eprover.result.parse(None, out=out)
-      return result["RUNTIME"] if "RUNTIME" in result else None
+   #def clock(self, out):
+   #   result = eprover.result.parse(None, out=out)
+   #   return result["RUNTIME"] if "RUNTIME" in result else None
 
+   def process(self, out, inst, limit, result=None):
+      if not result:
+         result = eprover.result.parse(None, out=out)
+      if eprover.result.error(result):
+         return None
+
+      runtime = result["RUNTIME"] if "RUNTIME" in result else limit
+      quality = result["PROCESSED"] if eprover.result.solved(result) else 1000000
+      return [quality, runtime]
+         
    def name(self, params):
       args = self.repr(params).replace("="," ")
       conf = self.conf_prefix+sha.sha(args).hexdigest()

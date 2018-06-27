@@ -54,6 +54,13 @@ def finished(state):
 def timeout(state):
    print "> Timeout: Not enough time for training. Terminating after %s seconds." % (time.time() - state.start_time)
 
+def timestamp(t_start, msg, prog="GRACKLE"):
+   t_elapsed = int(time.time() - t_start)
+   t_hour = t_elapsed / 3600
+   t_min = (t_elapsed % 3600) / 60
+   t_sec = t_elapsed % 60
+   print "> [%02d:%02d:%02d] %s: %s" % (t_hour, t_min, t_sec, prog, msg)
+
 def improved(state, conf):
    params = state.trains.runner.recall(conf)
    rep = state.trains.runner.repr(params)
