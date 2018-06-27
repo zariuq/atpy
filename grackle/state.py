@@ -88,6 +88,7 @@ class State:
       self.tops = int(ini["tops"]) if "tops" in ini else 10
       self.best = int(ini["best"]) if "best" in ini else 4
       self.rank = int(ini["rank"]) if "rank" in ini else 1
+      self.timeout = int(ini["timeout"]) if "timeout" in ini else 0
       self.train_limit = int(ini["train_time"]) if "train_time" in ini else None
       if self.train_limit < 0:
          self.train_limit = None
@@ -136,4 +137,17 @@ class State:
       if conf not in self.done:
          return False
       return frozenset(insts) in self.done[conf]
+
+   def timeouted(self):
+      if not self.timeout:
+         return False
+      if "timeout" not in self.trainer.config:
+         return False
+
+      t_train = 3 * self.trainer.config["timeout"] 
+      t_elapsed = time.time() - self.start_time 
+      t_remains = self.timeout - t_elapsed
+
+      return t_remains < t_train
+
 

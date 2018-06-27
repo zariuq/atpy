@@ -156,7 +156,7 @@ def base_forbiddens(config, cefs):
 
 def base(config, init=None):
    cefs = cefs_load(config["cefs_db"])
-   cefs = map(cef2block, cefs_domain(config["cefs_count"], cefs))
+   cefs = map(cef2block, cefs_domain(config["max_slots"], cefs))
    if init:
       for x in init:
          if x.startswith("cef") and init[x] not in cefs:
@@ -170,7 +170,7 @@ def base(config, init=None):
 
 def glob(config, init=None):
    cefs = cefs_load(config["cefs_db"])
-   cefs = map(cef2block, cefs_domain(config["cefs_count"], cefs))
+   cefs = map(cef2block, cefs_domain(config["max_slots"], cefs))
    if init:
       for x in init:
          if x.startswith("cef") and init[x] not in cefs:

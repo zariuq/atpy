@@ -6,6 +6,7 @@ STATUS_ALL = STATUS_OK + STATUS_OUT
 
 PATS = {
    "RUNTIME":   re.compile(r"^\s*(\d*\.\d*)\s*task-clock:up"),
+   "USERTIME":  re.compile(r"^# User time\s*: (\S*) s"),
    "MILINS":    re.compile(r"^\s*([0-9,]*)\s*instructions:up"),
    "STATUS":    re.compile(r"^# SZS status (\S*)"),
    "PROCESSED": re.compile(r"^# Processed clauses\s*: (\S*)"),
@@ -52,6 +53,8 @@ def parse(f_out, trains=False, out=None):
 
    if "RUNTIME" in result:
       result["RUNTIME"] /= 1000.0
+   elif "USERTIME" in result:
+      result["RUNTIME"] = result["USERTIME"]
    if "MILINS" in result:
       result["MILINS"] = int(result["MILINS"].replace(",",""))/(10**6)
    return result

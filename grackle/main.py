@@ -41,6 +41,10 @@ def specialize(state, conf):
    return new
 
 def improve(state, candidates):
+   if state.timeouted():
+      log.timeout(state)
+      return False
+
    for conf in candidates:
       new = specialize(state, conf)
       if new not in state.alls:
@@ -54,7 +58,7 @@ def improve(state, candidates):
    state.evals.save("final")
    state.trains.save("final")
    return False
-      
+
 def loop(state):
    while True:
       log.iter(state)
