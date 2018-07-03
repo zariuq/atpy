@@ -67,8 +67,14 @@ class Runner(object):
          # when self.direct, then pass params directly (not by name)!
          params = c
       cmd = self.cmd(params, inst, limit=limit, extra=extra)
+      
       start = time.time()
-      out = commands.getoutput(cmd)
+      try:
+         out = commands.getoutput(cmd)
+      except BaseException as err:
+         log.fatal("ERROR(Grackle): Runner failed: %s" % (err.message or err.__class__.__name__))
+         sys.exit(-1)
+
       end = time.time()
       
       #quality = self.quality(out) 
@@ -89,10 +95,10 @@ class Runner(object):
    def runs(self, cis):
       pool = multiprocessing.Pool(self.cores)
       try:
-         results = pool.map(wrapper, zip([self]*len(cis),cis))
-      except Exception as err:
+         results = pool.map_async(wrapper, zip([self]*len(cis),cis)).get(10000000)
+      except BaseException as err:
          pool.terminate()
-         log.fatal("ERROR(Grackle): Evaluation failed, see above for more info: %s" % str(err))
+         log.fatal("ERROR(Grackle): Evaluation failed: %s" % (err.message or err.__class__.__name__))
          sys.exit(-1)
       else:
          pool.close()
