@@ -5,8 +5,7 @@ from .. import eprover
 from . import protos, results
 from . import solved as solvedb
 
-BENCHMARKS_DIR = os.getenv("EXPRES_BENCHMARKS", 
-   os.path.join(os.getenv("HOME"),"projects","atp","benchmarks"))
+BENCHMARKS_DIR = os.getenv("ATPY_BENCHMARKS", ".")
 
 def path(bid, problem):
    return os.path.join(BENCHMARKS_DIR, bid, problem)

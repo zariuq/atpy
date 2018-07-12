@@ -2,7 +2,7 @@
 PREFIX = {
    "+": "+1",
    "-": "+10",
-   "*": "Should not ever see me"
+   "*": ""
 }
 
 BOOSTS = {
