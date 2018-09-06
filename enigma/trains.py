@@ -12,6 +12,8 @@ BOOSTS = {
 
 def count(ftrs, counts, emap, offset, strict=True):
    for ftr in ftrs:
+      if ftr.startswith("$"):
+         continue
       if "/" in ftr:
          parts = ftr.split("/")
          ftr = parts[0]
@@ -25,13 +27,29 @@ def count(ftrs, counts, emap, offset, strict=True):
       fid = emap[ftr] + offset
       counts[fid] = counts[fid]+inc if fid in counts else inc
 
+def proofstate(ftrs, offset):
+   state = ""
+   for ftr in ftrs:
+      if not ftr.startswith("$"):
+         continue
+      (num, val) = ftr[1:].split("/")
+      (num, val) = (int(num), float(val))
+      if not val:
+         continue
+      state += " "
+      #state += "%s:%d" % (num+offset, 1000*val)
+      state += "%s:%0.3f" % (num+offset, val)
+   return state
+
 def encode(pr, emap, strict=True):
    (sign,clause,conj) = pr.strip().split("|")
    counts = {}
    count(clause.strip().split(" "), counts, emap, 0, strict)
-   count(  conj.strip().split(" "), counts, emap, len(emap), strict)
+   conjs = conj.strip().split(" ")
+   count(conjs, counts, emap, len(emap), strict)
    ftrs = ["%s:%s"%(fid,counts[fid]) for fid in sorted(counts)] 
    ftrs = "%s %s"%(PREFIX[sign], " ".join(ftrs))
+   ftrs += proofstate(conjs, 2*len(emap))
    return ftrs
 
 def make(pre, emap, out=None, strict=True):

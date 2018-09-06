@@ -7,12 +7,15 @@ from . import solved as solvedb
 
 BENCHMARKS_DIR = os.getenv("ATPY_BENCHMARKS", ".")
 
-def path(bid, problem):
-   return os.path.join(BENCHMARKS_DIR, bid, problem)
+def path(bid, problem=""):
+   ret = os.path.join(BENCHMARKS_DIR, bid, problem)
+   if not os.path.exists(ret):
+      ret = os.path.join(".", bid, problem)
+   return ret
 
 def problems(bid):
-   probs = os.listdir(os.path.join(BENCHMARKS_DIR, bid))
-   probs = [x for x in probs if os.path.isfile(os.path.join(BENCHMARKS_DIR, bid, x)) and not x.endswith(".cnf")]
+   probs = os.listdir(path(bid))
+   probs = [x for x in probs if os.path.isfile(path(bid, x)) and not x.endswith(".cnf")]
    return probs
 
 def compute(bid, pid, problem, limit, force=False):
