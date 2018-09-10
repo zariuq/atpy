@@ -3,7 +3,7 @@ from .. import expres
 
 def standalone(pid, name, mult=0, noinit=False):
    proto = expres.protos.load(pid)
-   enigma = "1*Enigma(ConstPrio,%s,%s)" % (name, mult)
+   enigma = "1*Enigma(PreferWatchlist,%s,%s)" % (name, mult)
    eproto = "%s-H'(%s)'" % (proto[:proto.index("-H'")], enigma)
    post = "0M%s" % mult
    if noinit:
@@ -21,7 +21,7 @@ def combined(pid, name, freq=None, mult=0, noinit=False):
    else:
       post = "F%s"% freq
    post += "M%s" % mult
-   enigma = "%d*Enigma(ConstPrio,%s,%s)" % (freq,name,mult)
+   enigma = "%d*Enigma(PreferWatchlist,%s,%s)" % (freq,name,mult)
    eproto = proto.replace("-H'(", "-H'(%s,"%enigma)
    if noinit:
       eproto = eproto.replace("--prefer-initial-clauses", "")
