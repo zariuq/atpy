@@ -1,3 +1,4 @@
+import math
 
 PREFIX = {
    "+": "+1",
@@ -10,7 +11,7 @@ BOOSTS = {
    "WRONG:NEG": 10
 }
 
-def count(ftrs, counts, emap, offset, strict=True):
+def count(ftrs, vector, emap, offset, strict=True):
    for ftr in ftrs:
       if ftr.startswith("$"):
          continue
@@ -25,10 +26,10 @@ def count(ftrs, counts, emap, offset, strict=True):
       if (not strict) and (ftr not in emap):
          continue
       fid = emap[ftr] + offset
-      counts[fid] = counts[fid]+inc if fid in counts else inc
+      vector[fid] = vector[fid]+inc if fid in vector else inc
 
-def proofstate(ftrs, offset):
-   state = ""
+def proofstate(ftrs, vector, offset):
+   #state = ""
    for ftr in ftrs:
       if not ftr.startswith("$"):
          continue
@@ -36,21 +37,31 @@ def proofstate(ftrs, offset):
       (num, val) = (int(num), float(val))
       if not val:
          continue
-      state += " "
-      #state += "%s:%d" % (num+offset, 1000*val)
-      state += "%s:%0.3f" % (num+offset, val)
-   return state
+      #state += " "
+      ##state += "%s:%d" % (num+offset, 1000*val)
+      #state += "%s:%0.3f" % (num+offset, val)
+      vector[offset+num] = val
+   #return state
+
+def string(sign, vector):
+   ftrs = ["%s:%s"%(fid,vector[fid]) for fid in sorted(vector)] 
+   ftrs = "%s %s"%(PREFIX[sign], " ".join(ftrs))
+   return ftrs
+
+def normalize(vector):
+    non0 = len([x for x in vector if vector[x]])
+    non0 = math.sqrt(non0)
+    return {x:vector[x]/non0 for x in vector}
 
 def encode(pr, emap, strict=True):
    (sign,clause,conj) = pr.strip().split("|")
-   counts = {}
-   count(clause.strip().split(" "), counts, emap, 0, strict)
+   vector = {}
+   count(clause.strip().split(" "), vector, emap, 0, strict)
    conjs = conj.strip().split(" ")
-   count(conjs, counts, emap, len(emap), strict)
-   ftrs = ["%s:%s"%(fid,counts[fid]) for fid in sorted(counts)] 
-   ftrs = "%s %s"%(PREFIX[sign], " ".join(ftrs))
-   ftrs += proofstate(conjs, 2*len(emap))
-   return ftrs
+   count(conjs, vector, emap, len(emap), strict)
+   proofstate(conjs, vector, 2*len(emap))
+   #vector = normalize(vector)
+   return string(sign, vector)
 
 def make(pre, emap, out=None, strict=True):
    train = []
