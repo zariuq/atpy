@@ -43,6 +43,7 @@ def standard(name, rkeys=None, force=False, gzip=True):
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
+
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
    print "training", name
    liblinear.train(f_in, f_mod, f_out, f_log)

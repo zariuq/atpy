@@ -5,6 +5,8 @@ import os
 def proofstate(f_pre, f_pos, f_neg):
    pre = file(f_pre).read().strip().split("\n")
    pre = [x for x in pre if x]
+   if pre and "proofvector" not in pre[0]:
+      return
    i = 0
    for pos in file(f_pos):
       pos = pos[pos.rindex("proofvector")+12:].rstrip(",\n").split(",")
