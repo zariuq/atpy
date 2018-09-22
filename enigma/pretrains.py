@@ -9,6 +9,9 @@ def proofstate(f_pre, f_pos, f_neg):
       return
    i = 0
    for pos in file(f_pos):
+      if "proofvector" not in pos:
+      	  i += 1
+          continue
       pos = pos[pos.rindex("proofvector")+12:].rstrip(",\n").split(",")
       pos = [x.split("(")[0].split(":") for x in pos]
       pos = ["$%s/%s"%tuple(x) for x in pos]
@@ -16,6 +19,9 @@ def proofstate(f_pre, f_pos, f_neg):
       pre[i] += " ".join(pos)
       i += 1
    for neg in file(f_neg):
+      if "proofvector" not in neg:
+      	  i += 1
+          continue
       neg = neg[neg.rindex("proofvector")+12:].rstrip(",\n").split(",")
       neg = [x.split("(")[0].split(":") for x in neg]
       neg = ["$%s/%s"%tuple(x) for x in neg]
