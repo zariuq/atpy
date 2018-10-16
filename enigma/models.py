@@ -9,15 +9,15 @@ def path(name, filename=None):
    else:
       return os.path.join(ENIGMA_ROOT, name)
 
-def collect(name, rkeys):
+def collect(name, rkeys, version):
    f_pre = path(name, "train.pre")
-   pretrains.prepare(rkeys)
+   pretrains.prepare(rkeys, version)
    pretrains.make(rkeys, out=file(f_pre, "w"))
 
-def setup(name, rkeys):
+def setup(name, rkeys, version):
    os.system("mkdir -p %s" % path(name))
    if rkeys:
-      collect(name, rkeys)
+      collect(name, rkeys, version)
 
    f_pre = path(name, "train.pre")
    f_map = path(name, "enigma.map")
@@ -26,10 +26,10 @@ def setup(name, rkeys):
       os.system("rm -f %s" % f_log)
 
    emap = enigmap.create(file(f_pre))
-   enigmap.save(emap, f_map)
+   enigmap.save(emap, f_map, version)
    return emap
 
-def standard(name, rkeys=None, force=False, gzip=True):
+def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
@@ -39,7 +39,7 @@ def standard(name, rkeys=None, force=False, gzip=True):
    if not force and os.path.isfile(f_mod):
       return
 
-   emap = setup(name, rkeys)
+   emap = setup(name, rkeys, version)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
@@ -56,7 +56,7 @@ def standard(name, rkeys=None, force=False, gzip=True):
 
    return True
 
-def smartboost(name, rkeys=None, force=False, gzip=True):
+def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
@@ -65,7 +65,7 @@ def smartboost(name, rkeys=None, force=False, gzip=True):
    if not force and os.path.isfile(f_Mod):
       return
   
-   emap = setup(name, rkeys)
+   emap = setup(name, rkeys, version)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False

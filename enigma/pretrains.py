@@ -3,40 +3,29 @@ from .. import expres, eprover
 import os
 
 def proofstate(f_pre, f_pos, f_neg):
+   def parse(clause):
+      clause = clause[clause.rindex("proofvector")+12:].rstrip(",\n").split(",")
+      clause = [x.split("(")[0].split(":") for x in clause]
+      clause = ["$%s/%s"%tuple(x) for x in clause]
+      return " ".join(clause)
    pre = file(f_pre).read().strip().split("\n")
    pre = [x for x in pre if x]
-   if pre and "proofvector" not in pre[0]:
-      return
    i = 0
    for pos in file(f_pos):
-      if "proofvector" not in pos:
-      	  i += 1
-          continue
-      pos = pos[pos.rindex("proofvector")+12:].rstrip(",\n").split(",")
-      pos = [x.split("(")[0].split(":") for x in pos]
-      pos = ["$%s/%s"%tuple(x) for x in pos]
-      pre[i] += " "
-      pre[i] += " ".join(pos)
+      pre[i] += " "+parse(pos)
       i += 1
    for neg in file(f_neg):
-      if "proofvector" not in neg:
-      	  i += 1
-          continue
-      neg = neg[neg.rindex("proofvector")+12:].rstrip(",\n").split(",")
-      neg = [x.split("(")[0].split(":") for x in neg]
-      neg = ["$%s/%s"%tuple(x) for x in neg]
-      pre[i] += " "
-      pre[i] += " ".join(neg)
+      pre[i] += " "+parse(neg)
       i += 1
    if i != len(pre):
       raise Exception("File %s does not match files %s and %s!" % (f_pre,f_pos,f_neg))
    file(f_pre, "w").write("\n".join(pre))
 
-def prepare(rkeys):
+def prepare(rkeys, version):
    for (bid, pid, problem, limit) in rkeys:
 
       f_problem = expres.benchmarks.path(bid, problem)
-      f_cnf = f_problem+".cnf"
+      f_cnf = expres.benchmarks.path(bid, "."+problem)+".cnf"
       if not os.path.isfile(f_cnf):
          file(f_cnf, "w").write(eprover.runner.cnf(f_problem))
 
@@ -52,15 +41,18 @@ def prepare(rkeys):
             file(f_neg, "w").write("\n".join(result["NEG"]))
       
       f_pre = expres.results.path(bid, pid, problem, limit, ext="pre")
-      if not os.path.isfile(f_pre):
-         out = file(f_pre, "w")
-         subprocess.call(["enigma-features", "--free-numbers", f_pos, f_neg, f_cnf], \
-            stdout=out)
-            #stdout=out, stderr=subprocess.STDOUT)
-         out.close()
+      #if not os.path.isfile(f_pre):
+      out = file(f_pre, "w")
+      subprocess.call(["enigma-features", "--free-numbers", "--enigma-features=%s"%version, \
+         f_pos, f_neg, f_cnf], stdout=out)
+         #stdout=out, stderr=subprocess.STDOUT)
+      out.close()
+      if "W" in version:
          proofstate(f_pre, f_pos, f_neg)
 
 def translate(f_cnf, f_conj, f_out):
+   "deprecated?"
+
    out = file(f_out, "w")
    if not f_conj:
       subprocess.call(["enigma-features", "--free-numbers", f_cnf], stdout=out)

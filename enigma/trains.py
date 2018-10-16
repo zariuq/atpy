@@ -13,6 +13,8 @@ BOOSTS = {
 
 def count(ftrs, vector, emap, offset, strict=True):
    for ftr in ftrs:
+      if not ftr:
+         continue
       if ftr.startswith("$"):
          continue
       if "/" in ftr:

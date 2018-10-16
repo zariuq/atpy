@@ -5,9 +5,9 @@ STATUS_OUT = ['ResourceOut', 'GaveUp']
 STATUS_ALL = STATUS_OK + STATUS_OUT
 
 PATS = {
-   "RUNTIME":   re.compile(r"^\s*(\d*\.\d*)\s*task-clock:up"),
+   "RUNTIME":   re.compile(r"^\s*(\d*\.\d*)\s*task-clock:u"),
    "USERTIME":  re.compile(r"^# User time\s*: (\S*) s"),
-   "MILINS":    re.compile(r"^\s*([0-9,]*)\s*instructions:up"),
+   "MILINS":    re.compile(r"^\s*([0-9,]*)\s*instructions:u"),
    "STATUS":    re.compile(r"^# SZS status (\S*)"),
    "PROCESSED": re.compile(r"^# Processed clauses\s*: (\S*)"),
    "GENERATED": re.compile(r"^# Generated clauses\s*: (\S*)"),
@@ -39,7 +39,7 @@ def parse(f_out, trains=False, out=None):
 
    for line in out:
       line = line.rstrip()
-      if line and (line[0] == "#" or line[0] == " "):
+      if (len(line) > 2) and ((line[0] == "#" and line[1] == " " )or line[0] == " "):
          for pat in PATS:
             mo = PATS[pat].search(line)
             if mo:
