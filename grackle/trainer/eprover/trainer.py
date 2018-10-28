@@ -51,6 +51,8 @@ class BaseFineTrainer(StageTrainer):
    def __init__(self, runner, cls):
       StageTrainer.__init__(self, runner, cls, [
          #tuner.SINE("00-sine"), 
-         tuner.GLOBAL("01-global"),
+         #tuner.GLOBAL("01-global"),
+         tuner.BASE("00-base"),
+         tuner.ORDER("01-order"),
          tuner.FINE("02-fine")])
 
