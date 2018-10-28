@@ -18,10 +18,10 @@ def problems(bid):
 
 def compute(bid, pid, problem, limit, force=False, ebinary=None, eargs=None):
    f_problem = path(bid, problem)
-   proto = protos.load(pid)
    f_out = results.path(bid, pid, problem, limit)
    if force or not os.path.isfile(f_out):
       os.system("mkdir -p %s" % os.path.dirname(f_out))
+      proto = protos.load(pid)
       out = eprover.runner.run(f_problem, proto, limit, f_out, ebinary, eargs)
    return results.load(bid, pid, problem, limit)
 
