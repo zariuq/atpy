@@ -50,7 +50,7 @@ class BaseTrainer(StageTrainer):
 class BaseFineTrainer(StageTrainer):
    def __init__(self, runner, cls):
       StageTrainer.__init__(self, runner, cls, [
-         tuner.SINE("00-sine"), 
+         #tuner.SINE("00-sine"), 
          tuner.GLOBAL("01-global"),
          tuner.FINE("02-fine")])
 
