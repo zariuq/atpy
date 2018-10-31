@@ -1,11 +1,12 @@
 import re
 from .. import expres
 
-def standalone(pid, name, mult=0, noinit=False):
+def standalone(pid, name, mult=0, noinit=False, efun="Enigma"):
    proto = expres.protos.load(pid)
-   enigma = "1*Enigma(PreferWatchlist,%s,%s)" % (name, mult)
+   enigma = "1*%s(PreferWatchlist,%s,%s)" % (efun, name, mult)
    eproto = "%s-H'(%s)'" % (proto[:proto.index("-H'")], enigma)
-   post = ("0M%s" % mult) if mult else "0"
+   post = efun
+   post += ("0M%s" % mult) if mult else "0"
    if noinit:
       eproto = eproto.replace("--prefer-initial-clauses", "")
       post += "No" 
@@ -13,15 +14,16 @@ def standalone(pid, name, mult=0, noinit=False):
    expres.protos.save(epid, eproto)
    return epid
 
-def combined(pid, name, freq=None, mult=0, noinit=False):
+def combined(pid, name, freq=None, mult=0, noinit=False, efun="Enigma"):
    proto = expres.protos.load(pid)
+   post = efun
    if not freq:
       freq = sum(map(int,re.findall(r"(\d*)\*", proto)))
-      post = "S"
+      post += "S"
    else:
-      post = "F%s"% freq
+      post += "F%s"% freq
    post += ("M%s" % mult) if mult else ""
-   enigma = "%d*Enigma(PreferWatchlist,%s,%s)" % (freq,name,mult)
+   enigma = "%d*%s(PreferWatchlist,%s,%s)" % (freq,efun,name,mult)
    eproto = proto.replace("-H'(", "-H'(%s,"%enigma)
    if noinit:
       eproto = eproto.replace("--prefer-initial-clauses", "")

@@ -1,5 +1,6 @@
 import os
-from . import enigmap, pretrains, trains, liblinear
+from . import enigmap, pretrains, trains, liblinear, protos, xgbooster
+from .. import expres
 
 ENIGMA_ROOT = os.getenv("ENIGMA_ROOT", "./Enigma")
 
@@ -56,7 +57,7 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True):
 
    return True
 
-def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True):
+def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
@@ -101,15 +102,41 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True):
          break
       trains.boost(f_in, f_out, out=file(f_in2,"w"), method=method)
       it += 1
-   log.close()
-   
+
    stat = liblinear.stats(f_in, f_out)
    print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
    
+   if xgb:
+      f_xgb = path(name, "model.xgb")
+      xgbooster.train(f_in, f_xgb, log)
+   log.close()
+      
    if gzip:
       os.system("cd %s; gzip *.pre *.in *.out" % path(name))
    
    return True
+
+def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
+         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False):
+
+   if results is None:
+      results = {}
+   if update:
+      results.update(expres.benchmarks.eval(bid, pids, limit, cores=cores, eargs=eargs))
+   if nick:
+      model = "%s/%s" % (model, nick)
+   
+   smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb)
+   new = [
+      protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),
+      protos.combined(pids[0], model, mult=0, noinit=True, efun=efun)
+   ]
+   if update:
+      pids.extend(new)
+      results.update(expres.benchmarks.eval(bid, new, limit, cores=cores, eargs=eargs))
+   return new
+
+
 
 def join(name, models, combine=max):
    f_maps = [path(model, "enigma.map") for model in models]
