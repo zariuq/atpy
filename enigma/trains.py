@@ -2,13 +2,13 @@ import math
 
 PREFIX = {
    "+": "+1",
-   "-": "+10",
+   "-": "+0",
    "*": ""
 }
 
 BOOSTS = {
    "WRONG:POS": 1,
-   "WRONG:NEG": 10
+   "WRONG:NEG": 0
 }
 
 def count(ftrs, vector, emap, offset, strict=True):
