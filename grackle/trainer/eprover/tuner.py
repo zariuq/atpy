@@ -75,8 +75,8 @@ class BaseTuner(Tuner):
 
    def split(self, params):
       params = convert(params)
-      main = {x:params[x] for x in params if not x.startswith("tord")}
-      extra = {x:params[x] for x in params if x.startswith("tord")}
+      main = {x:params[x] for x in params if not (x.startswith("tord") or x.startswith("sine"))}
+      extra = {x:params[x] for x in params if x.startswith("tord") or x.startswith("sine")}
       return (main, extra)
 
    def join(self, main, extra):
