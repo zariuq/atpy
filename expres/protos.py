@@ -1,6 +1,6 @@
 import os
 
-PROTOS_DIR = os.getenv("EXPRES_PROTOS", "./00PROTOS")
+PROTOS_DIR = os.getenv("EXPRES_PROTOS", "strats")
 
 def path(pid):
    if pid.startswith("Enigma+"):

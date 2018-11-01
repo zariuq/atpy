@@ -22,7 +22,7 @@ def save(bid, pid, limit, problems):
 def update(results):
    solved = {}
    for rkey in results:
-      (bid, pid, problem, limit) = rkey
+      (bid, pid, problem, limit) = rkey[:4]
       if eprover.result.solved(results[rkey]):
          skey = (bid, pid, limit)
          if skey not in solved:

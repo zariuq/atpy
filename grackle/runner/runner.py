@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import sha
@@ -9,8 +10,9 @@ from .. import log
 
 def wrapper(args):
    (runner, (x, inst)) = args
-   return runner.run(x, inst)
-
+   limit = runner.config["cutoff"] if "cutoff" in runner.config else None
+   return runner.run(x, inst, limit=limit)
+         
 class Runner(object):
    PERF = "perf stat -e task-clock:up,page-faults:up,instructions:up"
    CLOCK = re.compile(r"(\d*\.\d*)\s*task-clock:up")
@@ -19,8 +21,12 @@ class Runner(object):
    def __init__(self, direct, cores=4):
       self.direct = direct
       self.cores = cores
+      self.config = {}
 
-   def cmd(self, params, inst):
+   def cmd(self, params, inst, limit=None, extra=None):
+      pass
+
+   def process(self, out, inst):
       pass
 
    def args(self, params):
@@ -38,13 +44,13 @@ class Runner(object):
    def clean(self, params):
       return params
    
-   def quality(self, out):
-      mo = Runner.RESULT.search(out)
-      return mo.group(1) if mo else None
+   #def quality(self, out):
+   #   mo = Runner.RESULT.search(out)
+   #   return mo.group(1) if mo else None
 
-   def clock(self, out):
-      mo = Runner.CLOCK.search(out)
-      return mo.group(1) if mo else None
+   #def clock(self, out):
+   #   mo = Runner.CLOCK.search(out)
+   #   return mo.group(1) if mo else None
 
    def params(self, lst):
       ps = {}
@@ -54,29 +60,50 @@ class Runner(object):
          ps[key] = val
       return ps
    
-   def run(self, c, inst, limit=None):
+   def run(self, c, inst, limit=None, extra=None):
       if not self.direct:
          params = self.recall(c)
       else:
          # when self.direct, then pass params directly (not by name)!
          params = c
-      cmd = self.cmd(params, inst)
-      start = time.time()
-      (status,out) = commands.getstatusoutput(cmd)
-      end = time.time()
-      if status != 0:
-         print "GRACKLE: Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
-         return None
+      cmd = self.cmd(params, inst, limit=limit, extra=extra)
       
-      quality = self.quality(out) or 1000000000
-      clock = self.clock(out) or (end-start)
-      return [quality,clock]
+      start = time.time()
+      try:
+         out = commands.getoutput(cmd)
+      except BaseException as err:
+         log.fatal("ERROR(Grackle): Runner failed: %s" % (err.message or err.__class__.__name__))
+         sys.exit(-1)
+
+      end = time.time()
+      
+      #quality = self.quality(out) 
+      #if not quality:
+      #   msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+      #   log.fatal(msg)
+      #   return None
+      #clock = self.clock(out) or (end-start)
+
+      res = self.process(out, inst, limit)
+      if not res:
+         msg = "\nERROR(Grackle): Error while evaluating %s on instance %s!\ncommand: %s\noutput: \n%s\n"%(c,inst,cmd,out)
+         log.fatal(msg)
+         return None
+
+      return res
 
    def runs(self, cis):
       pool = multiprocessing.Pool(self.cores)
-      results = pool.map(wrapper, zip([self]*len(cis),cis))
+      try:
+         results = pool.map_async(wrapper, zip([self]*len(cis),cis)).get(10000000)
+      except BaseException as err:
+         pool.terminate()
+         log.fatal("ERROR(Grackle): Evaluation failed: %s" % (err.message or err.__class__.__name__))
+         sys.exit(-1)
+      else:
+         pool.close()
       if None in results:
-         log.error("GRACKLE: Error: Evaluation failed, see above for more info.")
+         log.fatal("ERROR(Grackle): Evaluation failed, see above for more info.")
          sys.exit(-1)
       return zip(cis, results)
-   
+

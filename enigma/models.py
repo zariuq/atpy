@@ -43,6 +43,7 @@ def standard(name, rkeys=None, force=False, gzip=True):
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
+
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
    print "training", name
    liblinear.train(f_in, f_mod, f_out, f_log)
@@ -51,7 +52,7 @@ def standard(name, rkeys=None, force=False, gzip=True):
    print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
 
    if gzip:
-      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
+    os.system("cd %s; gzip *.pre *.in *.out" % path(name))
 
    return True
 
@@ -70,6 +71,7 @@ def smartboost(name, rkeys=None, force=False, gzip=True):
       return False
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
+   method = None
    print "smart-boosting", name
    log = file(f_log, "a")
    while True:
@@ -83,11 +85,21 @@ def smartboost(name, rkeys=None, force=False, gzip=True):
       stat = liblinear.stats(f_in, f_out)
       log.write("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
       log.write("\n")
-      if stat["ACC:POS"] >= stat["ACC:NEG"]:
+
+      if not method:
+         if stat["ACC:POS"] < stat["ACC:NEG"]:
+            method = "WRONG:POS"
+            terminate = lambda s: s["ACC:POS"] >= s["ACC:NEG"]
+         else:
+            method = "WRONG:NEG"
+            terminate = lambda s: s["ACC:NEG"] >= s["ACC:POS"]
+
+      #if stat["ACC:POS"] >= stat["ACC:NEG"]:
       #if stat["WRONG:POS"] == 0:
+      if terminate(stat):
          os.system("cp %s %s" % (f_mod, f_Mod))
          break
-      trains.boost(f_in, f_out, out=file(f_in2,"w"), method="WRONG:POS")
+      trains.boost(f_in, f_out, out=file(f_in2,"w"), method=method)
       it += 1
    log.close()
    

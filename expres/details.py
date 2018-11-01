@@ -1,3 +1,4 @@
+from .. import eprover
 
 def make(bid, pids, results, selector=None, key=None, none="-"):
    details = {}
@@ -10,7 +11,7 @@ def make(bid, pids, results, selector=None, key=None, none="-"):
          rkey = (bid,pid,problem,limit)
          if (problem,limit) not in details:
             details[(problem,limit)] = {}
-         details[(problem,limit)][pid] = selector(results[rkey]) if rkey in results else none
+         details[(problem,limit)][pid] = selector(results[rkey]) if rkey in results and eprover.result.solved(results[rkey])else none
          #if pid != pid0 and pid0 in details[(problem,limit)]:
          #   if type(details[(problem,limit)][pid]) is int and \
          #      type(details[(problem,limit)][pid0]) is int:
