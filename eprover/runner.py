@@ -6,7 +6,7 @@ PERF = ""
 
 E_BIN = "eprover"
 #E_BIN = "/home/zar/bin/tbin/eprover"
-E_ARGS = "%s -s -p --resources-info --memory-limit=1024 --print-statistics --tstp-format"
+E_ARGS = "%s -s -p --resources-info --memory-limit=1024 --print-statistics --tstp-format --free-numbers "
 #E_ARGS = "%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
 #E_ARGS = "--cpu-limit=%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
 
