@@ -61,7 +61,7 @@ class EproverRunner(Runner):
 
    def cmd(self, params, inst, limit=None, extra=None):
       args = self.args(params)
-      d_root = getenv("TPTP", ".") # probably not needed!
+      d_root = getenv("ATPY_BENCHMARKS", getenv("TPTP", "."))
       return eprover.runner.cmd(path.join(d_root,inst), args, limit)
    
    def args(self, params):
