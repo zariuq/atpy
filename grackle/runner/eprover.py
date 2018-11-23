@@ -85,6 +85,10 @@ class EproverRunner(Runner):
             eargs["prord"] += " -c%(tord_const)s" % eargs
       elif eargs["tord"] == "LPO4":
          eargs["prord"] = "-G%(tord_prec)s" % eargs
+      elif eargs["tord"] == "WPO":
+         eargs["prord"] = "-G%(tord_prec)s -w%(tord_weight)s -A%(tord_coefs)s -a%(tord_algebra)s" % eargs
+         if eargs["tord_const"] != "0":
+            eargs["prord"] += " -c%(tord_const)s" % eargs
       else:
          eargs["prord"] = ""
       # SinE
@@ -163,9 +167,11 @@ class EproverRunner(Runner):
 
       if "prord" not in params:
          if params["tord"] == "Auto":
-            delete.extend(["tord_prec", "tord_weight", "tord_const"])
+            delete.extend(["tord_prec", "tord_weight", "tord_const", "tord_algebra", "tord_coefs"])
          elif params["tord"] == "LPO4":
-            delete.extend(["tord_weight", "tord_const"])
+            delete.extend(["tord_weight", "tord_const", "tord_algebra", "tord_coefs"])
+         elif params["tord"] == "KBO6":
+            delete.extend(["tord_algebra", "tord_coefs"])
       
       for param in delete:
          if param in params:
