@@ -3,7 +3,7 @@ import re
 import sys
 import sha
 import time
-import commands
+import subprocess
 import multiprocessing
 
 from .. import log
@@ -70,7 +70,9 @@ class Runner(object):
       
       start = time.time()
       try:
-         out = commands.getoutput(cmd)
+         out = subprocess.check_output(cmd, shell=True)
+      except subprocess.CalledProcessError:
+         pass
       except BaseException as err:
          log.fatal("ERROR(Grackle): Runner failed: %s" % (err.message or err.__class__.__name__))
          sys.exit(-1)
