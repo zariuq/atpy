@@ -71,8 +71,8 @@ class Runner(object):
       start = time.time()
       try:
          out = subprocess.check_output(cmd, shell=True)
-      except subprocess.CalledProcessError:
-         pass
+      except subprocess.CalledProcessError as err:
+         out = err.output
       except BaseException as err:
          log.fatal("ERROR(Grackle): Runner failed: %s" % (err.message or err.__class__.__name__))
          sys.exit(-1)
