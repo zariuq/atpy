@@ -30,7 +30,7 @@ def setup(name, rkeys, version):
    enigmap.save(emap, f_map, version)
    return emap
 
-def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True):
+def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
@@ -52,8 +52,14 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True):
    stat = liblinear.stats(f_in, f_out)
    print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
 
+   if xgb:
+      log = file(f_log, "a")
+      f_xgb = path(name, "model.xgb")
+      xgbooster.train(f_in, f_xgb, log)
+      log.close()
+   
    if gzip:
-      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
+      os.system("cd %s; gzip -f *.pre *.in *.out" % path(name))
 
    return True
 
@@ -112,28 +118,32 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    log.close()
       
    if gzip:
-      os.system("cd %s; gzip *.pre *.in *.out" % path(name))
+      os.system("cd %s; gzip -f *.pre *.in *.out" % path(name))
    
    return True
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
-         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False):
+         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, boosting=False):
 
    if results is None:
       results = {}
    if update:
-      results.update(expres.benchmarks.eval(bid, pids, limit, cores=cores, eargs=eargs))
+      results.update(expres.benchmarks.eval(bid, pids, limit, cores=cores, eargs=eargs, force=force))
    if nick:
       model = "%s/%s" % (model, nick)
    
-   smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb)
+   if boosting:
+      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb)
+   else:
+      standard(model, results, version, force=force, gzip=gzip, xgb=xgb)
+      
    new = [
       protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),
       protos.combined(pids[0], model, mult=0, noinit=True, efun=efun)
    ]
    if update:
       pids.extend(new)
-      results.update(expres.benchmarks.eval(bid, new, limit, cores=cores, eargs=eargs))
+      results.update(expres.benchmarks.eval(bid, new, limit, cores=cores, eargs=eargs, force=force))
    return new
 
 

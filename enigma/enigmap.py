@@ -5,6 +5,8 @@ def load(f_map):
    if not os.path.exists(f_map):
       return emap
    for line in file(f_map):
+      if line.startswith("version"):
+         continue
       (fid,ftr) = line.strip().split("(")[1].split(",")
       fid = int(fid.strip(", "))
       ftr = ftr.strip('") .')
