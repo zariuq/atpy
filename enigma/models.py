@@ -30,7 +30,7 @@ def setup(name, rkeys, version):
    enigmap.save(emap, f_map, version)
    return emap
 
-def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False):
+def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
@@ -55,7 +55,7 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
    if xgb:
       log = file(f_log, "a")
       f_xgb = path(name, "model.xgb")
-      xgbooster.train(f_in, f_xgb, log)
+      xgbooster.train(f_in, f_xgb, log, xgb_params)
       log.close()
    
    if gzip:
@@ -63,7 +63,7 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
 
    return True
 
-def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False):
+def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
@@ -114,7 +114,7 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    
    if xgb:
       f_xgb = path(name, "model.xgb")
-      xgbooster.train(f_in, f_xgb, log)
+      xgbooster.train(f_in, f_xgb, log, xgb_params)
    log.close()
       
    if gzip:
@@ -123,7 +123,8 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    return True
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
-         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, boosting=False):
+         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
+         boosting=False, xgb_params=None):
 
    if results is None:
       results = {}
@@ -133,9 +134,9 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
       model = "%s/%s" % (model, nick)
    
    if boosting:
-      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb)
+      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
    else:
-      standard(model, results, version, force=force, gzip=gzip, xgb=xgb)
+      standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
       
    new = [
       protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),

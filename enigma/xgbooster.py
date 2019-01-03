@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file
 
 
-def train(f_in, f_out, log=None):
+def train(f_in, f_out, log=None, xgb_params=None):
    if log:
       log.write("\nTraining XGBoost model (%s):\n\n" % f_in)
       oldout = sys.stdout
@@ -18,15 +18,19 @@ def train(f_in, f_out, log=None):
    pos = float(len([x for x in labels if x == 1]))
    neg = float(len([x for x in labels if x == 0]))
 
-   #param = {'max_depth':9, 'eta':0.3, 'objective':'binary:logistic'}
    param = {
       'max_depth': 9, 
       'eta': 0.3, 
       'objective': 'binary:logistic', 
-      'scale_pos_weight': (neg/pos)
+      'scale_pos_weight': (neg/pos),
    }
-   num_round = 200
-   #num_round = 200
+   if xgb_params:
+      param.update(xgb_params)
+   if "num_round" in param:
+      num_round = param["num_round"]
+      del param["num_round"]
+   else:
+      num_round = 200
 
    bst = xgb.train(param, dtrain, num_round, evals=[(dtrain, "training")])
    bst.save_model(f_out)
