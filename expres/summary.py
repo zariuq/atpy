@@ -13,6 +13,8 @@ def make(bid, pids, results, ref=None):
       problems = [r for r in results if r[0]==bid and r[1]==pid]
       total = len(problems)
       errors = [r for r in problems if eprover.result.error(results[r])]
+      if errors:
+         print "There were errors: %s" % errors
       errors = len(errors)
       solves = [r for r in problems if eprover.result.solved(results[r])]
       if ref:
