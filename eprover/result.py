@@ -25,7 +25,7 @@ def value(strval):
          pass
    return strval
 
-def parse(f_out, trains=False, out=None):
+def parse(f_out, trains=False, out=None, proof=False):
    result = {}
    result["STATUS"] = "Unknown"
    if trains:
@@ -37,19 +37,33 @@ def parse(f_out, trains=False, out=None):
    else:
       out = out.strip().split("\n")
 
+   inproof = False
    for line in out:
       line = line.rstrip()
+      #
       if (len(line) > 2) and ((line[0] == "#" and line[1] == " " )or line[0] == " "):
          for pat in PATS:
             mo = PATS[pat].search(line)
             if mo:
                result[pat] = value(mo.group(1))
+      #
       if trains and line.startswith("cnf(") and \
          ("$false" not in line) and ("epred" not in line):
          if "trainpos" in line:
             result["POS"].append(line)
          elif "trainneg" in line:
             result["NEG"].append(line)
+      #
+      if proof:
+         if line.startswith("# SZS output start"):
+            inproof = True
+            result["PROOF"] = []
+            continue
+         if inproof and line.startswith("# SZS output end"):
+            inproof = False
+            continue
+         if inproof:
+            result["PROOF"].append(line)
 
    if "RUNTIME" in result:
       result["RUNTIME"] /= 1000.0
