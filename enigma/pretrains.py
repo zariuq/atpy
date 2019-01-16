@@ -34,11 +34,21 @@ def prepare(rkeys, version):
       f_pos = expres.results.path(bid, pid, problem, limit, ext="pos")
       f_neg = expres.results.path(bid, pid, problem, limit, ext="neg")
       if not (os.path.isfile(f_pos) and os.path.isfile(f_neg)):
-         result = expres.results.load(bid, pid, problem, limit, trains=True)
+         result = expres.results.load(bid, pid, problem, limit, trains=True, proof=True)
          if not os.path.isfile(f_pos):
             file(f_pos, "w").write("\n".join(result["POS"]))
          if not os.path.isfile(f_neg):
             file(f_neg, "w").write("\n".join(result["NEG"]))
+         # extract additional positive samples from the proof
+         #f_sol = expres.results.path(bid, pid, problem, limit, ext="sol")
+         #file(f_sol, "w").write("\n".join(result["PROOF"]))
+         #f_prf = expres.results.path(bid, pid, problem, limit, ext="prf")
+         #prf = file(f_prf, "w")
+         #subprocess.call(["eprover", "--free-numbers", "--cnf", f_sol], stdout=prf)
+         ##subprocess.call(["eprover", "--free-numbers", "--cnf", "--no-preprocessing", f_sol], stdout=prf)
+         #prf.close()
+         #os.system("cat %s | grep '^cnf' >> %s" % (f_prf, f_pos))
+
       
       f_pre = expres.results.path(bid, pid, problem, limit, ext="pre")
       #if not os.path.isfile(f_pre):

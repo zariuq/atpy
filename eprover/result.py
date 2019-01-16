@@ -31,33 +31,34 @@ def parse(f_out, trains=False, out=None, proof=False):
    if trains:
       result["POS"] = []
       result["NEG"] = []
-
+   if proof:
+      result["PROOF"] = []
    if f_out is not None:
       out = file(f_out)
    else:
       out = out.strip().split("\n")
+            
 
    inproof = False
    for line in out:
       line = line.rstrip()
-      #
+      # search for patterns from PATS
       if (len(line) > 2) and ((line[0] == "#" and line[1] == " " )or line[0] == " "):
          for pat in PATS:
             mo = PATS[pat].search(line)
             if mo:
                result[pat] = value(mo.group(1))
-      #
+      # search for training samples
       if trains and line.startswith("cnf(") and \
          ("$false" not in line) and ("epred" not in line):
          if "trainpos" in line:
             result["POS"].append(line)
          elif "trainneg" in line:
             result["NEG"].append(line)
-      #
+      # search for proof
       if proof:
          if line.startswith("# SZS output start"):
             inproof = True
-            result["PROOF"] = []
             continue
          if inproof and line.startswith("# SZS output end"):
             inproof = False

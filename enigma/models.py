@@ -81,6 +81,10 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    method = None
    print "smart-boosting", name
    log = file(f_log, "a")
+   ##
+   #method = "WRONG:POS"
+   #terminate = lambda s: s["ACC:POS"] > 0.999
+   ##
    while True:
       log.write("\n--- ITER %d ---\n\n" % it)
       f_in  = path(name, "%02dtrain.in" % it)
