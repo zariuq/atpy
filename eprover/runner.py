@@ -21,7 +21,7 @@ def cmd(f_problem, proto, limit, ebinary=None, eargs=None):
       (t,p) = limit.split("+")
       (t,p) = (t[1:], p[1:])
       (t,p) = (int(t), int(p))
-      limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-clauses-limit=%s" % (t,t+1,p)
+      limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-set-limit=%s" % (t,t+1,p)
    else:
       raise Exception("atpy.eprover.runner: Unknown E limit for eprover.runner (%s)"%limit)
 
