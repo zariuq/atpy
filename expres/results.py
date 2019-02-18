@@ -19,7 +19,7 @@ def save(bid, pid, problem, limit, out):
    os.system("mkdir -p %s" % os.path.dirname(f_out))
    file(f_out,"w").write(out)
 
-def load(bid, pid, problem, limit, trains=False):
+def load(bid, pid, problem, limit, trains=False, proof=False):
    f_out = path(bid, pid, problem, limit)
-   return eprover.result.parse(f_out, trains=trains)
+   return eprover.result.parse(f_out, trains=trains, proof=proof)
 
