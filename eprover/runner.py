@@ -1,11 +1,11 @@
 import subprocess
 from subprocess import STDOUT
 
-PERF = "perf stat -e task-clock:up,page-faults:up,instructions:u"
-#PERF = ""
+#PERF = "perf stat -e task-clock:up,page-faults:up,instructions:u"
+PERF = ""
 
 E_BIN = "eprover"
-E_ARGS = "%s -p --resources-info --memory-limit=1024 --print-statistics --tstp-format"
+E_ARGS = "%s -p --resources-info --memory-limit=20480 --print-statistics --tstp-format"
 E_DEFAULTS = "-s"
 
 #E_ARGS = "%s -s -p --free-numbers --resources-info --memory-limit=1024 --print-statistics --tstp-format --training-examples=3"
@@ -16,12 +16,12 @@ def cmd(f_problem, proto, limit, ebinary=None, eargs=None):
    eargs = eargs if eargs else E_DEFAULTS
    if isinstance(limit, int):
       limit = "--soft-cpu-limit=%s --cpu-limit=%s" % (limit, limit+1)
-   elif isinstance(limit, str) and "+" in limit:
-      # otherwise limit format "Txxx+Cyyy"
-      (t,p) = limit.split("+")
+   elif isinstance(limit, str) and "-" in limit:
+      # otherwise limit format "Txxx-Cyyy"
+      (t,p) = limit.split("-")
       (t,p) = (t[1:], p[1:])
       (t,p) = (int(t), int(p))
-      limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-clauses-limit=%s" % (t,t+1,p)
+      limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-set-limit=%s" % (t,t+1,p)
    else:
       raise Exception("atpy.eprover.runner: Unknown E limit for eprover.runner (%s)"%limit)
 
