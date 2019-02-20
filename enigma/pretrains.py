@@ -4,9 +4,9 @@ import os
 
 def proofstate(f_pre, f_pos, f_neg):
    def parse(clause):
-      clause = clause[clause.rindex("proofvector")+12:].rstrip(",\n").split(",")
-      clause = [x.split("(")[0].split(":") for x in clause]
-      clause = ["$%s/%s"%tuple(x) for x in clause]
+      clause = clause[clause.rindex("proofvector")+12:].rstrip(",\n").strip().split(",")
+      clause = [x.split("(")[0].split(":") for x in clause if x]
+      clause = ["$%s/%s"%tuple(x) for x in clause if x]
       return " ".join(clause)
    pre = file(f_pre).read().strip().split("\n")
    pre = [x for x in pre if x]

@@ -1,7 +1,8 @@
 import subprocess
 from . import enigmap
 
-PERF = ["perf", "stat", "-e", "task-clock:up,page-faults:up,instructions:up"]
+#PERF = ["perf", "stat", "-e", "task-clock:up,page-faults:up,instructions:up"]
+PERF = []
 
 def train(f_in, f_mod, f_out=None, f_log=None):
    if f_log:
