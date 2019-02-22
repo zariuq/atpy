@@ -47,10 +47,11 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
 
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
    print "training", name
-   liblinear.train(f_in, f_mod, f_out, f_log)
-      
-   stat = liblinear.stats(f_in, f_out)
-   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+   if not xgb:
+       liblinear.train(f_in, f_mod, f_out, f_log)
+          
+       stat = liblinear.stats(f_in, f_out)
+       print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
 
    if xgb:
       log = file(f_log, "a")
@@ -136,11 +137,17 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
       results.update(expres.benchmarks.eval(bid, pids, limit, cores=cores, eargs=eargs, force=force))
    if nick:
       model = "%s/%s" % (model, nick)
-   
+
+   if cores > 1: # I want to allow training to use multiple threads (and do run-time parallelism on a per-problem basis)
+      OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
+      os.putenv("OMP_NUM_THREADS", str(cores))
    if boosting:
       smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
    else:
       standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
+   if cores > 1:
+      os.putenv("OMP_NUM_THREADS", OMP_NUM_THREADS)
+
       
    new = [
       protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),

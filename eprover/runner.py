@@ -17,11 +17,17 @@ def cmd(f_problem, proto, limit, ebinary=None, eargs=None):
    if isinstance(limit, int):
       limit = "--soft-cpu-limit=%s --cpu-limit=%s" % (limit, limit+1)
    elif isinstance(limit, str) and "-" in limit:
-      # otherwise limit format "Txxx-Cyyy"
+      # otherwise limit format "Txxx-Cyyy" or Pyyy
       (t,p) = limit.split("-")
+      limit_type = p[0]
       (t,p) = (t[1:], p[1:])
       (t,p) = (int(t), int(p))
-      limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-set-limit=%s" % (t,t+1,p)
+      if limit_type == 'P':
+          limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-set-limit=%s" % (t,t+1,p)
+      elif limit_type == 'C':
+          limit = "--soft-cpu-limit=%s --cpu-limit=%s --processed-clauses-limit=%s" % (t,t+1,p)
+      else:
+          raise Exception("atpy.eprover.runner: Unknown E limit for eprover.runner (%s)"%limit)
    else:
       raise Exception("atpy.eprover.runner: Unknown E limit for eprover.runner (%s)"%limit)
 
