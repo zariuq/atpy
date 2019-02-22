@@ -15,7 +15,7 @@ def collect(name, rkeys, version):
    pretrains.prepare(rkeys, version)
    pretrains.make(rkeys, out=file(f_pre, "w"))
 
-def setup(name, rkeys, version):
+def setup(name, rkeys, version, hashing):
    os.system("mkdir -p %s" % path(name))
    if rkeys:
       collect(name, rkeys, version)
@@ -26,11 +26,11 @@ def setup(name, rkeys, version):
    if os.path.isfile(f_log):
       os.system("rm -f %s" % f_log)
 
-   emap = enigmap.create(file(f_pre))
-   enigmap.save(emap, f_map, version)
-   return emap
+   emap = enigmap.create(file(f_pre), hashing)
+   enigmap.save(emap, f_map, version, hashing)
+   return emap if not hashing else hashing
 
-def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None):
+def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
@@ -40,13 +40,14 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
    if not force and os.path.isfile(f_mod):
       return
 
-   emap = setup(name, rkeys, version)
+   print "collecting training data for: ", name
+   emap = setup(name, rkeys, version, hashing)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
 
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
-   print "training", name
+   print "training:", name
    liblinear.train(f_in, f_mod, f_out, f_log)
       
    stat = liblinear.stats(f_in, f_out)
@@ -63,7 +64,7 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
 
    return True
 
-def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None):
+def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
@@ -72,7 +73,7 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    if not force and os.path.isfile(f_Mod):
       return
   
-   emap = setup(name, rkeys, version)
+   emap = setup(name, rkeys, version, hashing)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
@@ -128,8 +129,9 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
          cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
-         boosting=False, xgb_params=None):
-
+         boosting=False, xgb_params=None, hashing=None):
+   if ("h" in version and not hashing) or (hashing and "h" not in version):
+      raise Exception("enigma.models.loop: Parameter hashing must be set to hash base (int) only when version contains 'h'.")   
    if results is None:
       results = {}
    if update:
@@ -138,9 +140,9 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
       model = "%s/%s" % (model, nick)
    
    if boosting:
-      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
+      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing)
    else:
-      standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
+      standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing)
       
    new = [
       protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),
