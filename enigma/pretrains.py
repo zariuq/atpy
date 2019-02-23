@@ -21,9 +21,11 @@ def proofstate(f_pre, f_pos, f_neg):
       raise Exception("File %s does not match files %s and %s!" % (f_pre,f_pos,f_neg))
    file(f_pre, "w").write("\n".join(pre))
 
-# FIXME: add argument force=False and behaviour for force=True
-def prepare(rkeys, version):
-   for (bid, pid, problem, limit) in rkeys:
+def prepare(rkeys, version, force=False, cores=1):
+
+   #for (bid, pid, problem, limit) in rkeys:
+   def runjob(job):
+      (bid, pid, problem, limit, version, force) = job
 
       f_problem = expres.benchmarks.path(bid, problem)
       f_cnf = expres.benchmarks.path(bid, "."+problem)+".cnf"
@@ -34,11 +36,11 @@ def prepare(rkeys, version):
       #result = rkeys[(bid,pid,problem,limit)]
       f_pos = expres.results.path(bid, pid, problem, limit, ext="pos")
       f_neg = expres.results.path(bid, pid, problem, limit, ext="neg")
-      if not (os.path.isfile(f_pos) and os.path.isfile(f_neg)):
+      if force or (not (os.path.isfile(f_pos) and os.path.isfile(f_neg))):
          result = expres.results.load(bid, pid, problem, limit, trains=True, proof=True)
-         if not os.path.isfile(f_pos):
+         if force or not os.path.isfile(f_pos):
             file(f_pos, "w").write("\n".join(result["POS"]))
-         if not os.path.isfile(f_neg):
+         if force or not os.path.isfile(f_neg):
             file(f_neg, "w").write("\n".join(result["NEG"]))
          # extract additional positive samples from the proof
          #f_sol = expres.results.path(bid, pid, problem, limit, ext="sol")
@@ -52,7 +54,7 @@ def prepare(rkeys, version):
 
       
       f_pre = expres.results.path(bid, pid, problem, limit, ext="pre")
-      if not os.path.isfile(f_pre):
+      if force or not os.path.isfile(f_pre):
          out = file(f_pre, "w")
          subprocess.call(["enigma-features", "--free-numbers", "--enigma-features=%s"%version, \
             f_pos, f_neg, f_cnf], stdout=out)
@@ -60,6 +62,12 @@ def prepare(rkeys, version):
          out.close()
          if "W" in version:
             proofstate(f_pre, f_pos, f_neg)
+
+   jobs = [rkey+(version,force) for rkey in rkeys]
+   pool = Pool(cores)
+   res = pool.map_async(runjob, jobs).get(365*24*3600)
+   pool.close()
+
 
 def translate(f_cnf, f_conj, f_out):
    "deprecated?"
