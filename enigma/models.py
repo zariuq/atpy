@@ -12,7 +12,9 @@ def path(name, filename=None):
 
 def collect(name, rkeys, version, force, cores):
    f_pre = path(name, "train.pre")
+   print "preparing pretrains..."
    pretrains.prepare(rkeys, version, force, cores)
+   print "joining pretrains..."
    pretrains.make(rkeys, out=file(f_pre, "w"))
 
 def setup(name, rkeys, version, hashing, force, cores):
@@ -66,7 +68,7 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
 
    return True
 
-def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None, force=False, cores=1):
+def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None, cores=1):
    it = 0
    f_pre = path(name, "train.pre")
    f_log = path(name, "train.log")
