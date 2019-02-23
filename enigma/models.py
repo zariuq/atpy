@@ -32,7 +32,7 @@ def setup(name, rkeys, version, hashing, force, cores):
    enigmap.save(emap, f_map, version, hashing)
    return emap if not hashing else hashing
 
-def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, force=False, hashing=None, cores=1):
+def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None, cores=1):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
    f_mod = path(name, "model.lin")
@@ -144,9 +144,9 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
       model = "%s/%s" % (model, nick)
    
    if boosting:
-      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing, cores=cores, force=force)
+      smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing, cores=cores)
    else:
-      standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing, cores=cores, force=force)
+      standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing, cores=cores)
       
    new = [
       protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),
