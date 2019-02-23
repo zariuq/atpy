@@ -1,6 +1,6 @@
 import os
 from . import enigmap, pretrains, trains, liblinear, protos, xgbooster
-from .. import expres
+from .. import expres, log
 
 ENIGMA_ROOT = os.getenv("ENIGMA_ROOT", "./Enigma")
 
@@ -12,59 +12,70 @@ def path(name, filename=None):
 
 def collect(name, rkeys, version, force, cores):
    f_pre = path(name, "train.pre")
-   print "preparing pretrains..."
-   pretrains.prepare(rkeys, version, force, cores)
-   print "joining pretrains..."
-   pretrains.make(rkeys, out=file(f_pre, "w"))
+   if force or not os.path.isfile(f_pre):
+      log.msg("+ extracting pretrains from results")
+      pretrains.prepare(rkeys, version, force, cores)
+      log.msg("+ collecting pretrains data")
+      pretrains.make(rkeys, out=file(f_pre, "w"))
 
 def setup(name, rkeys, version, hashing, force, cores):
    os.system("mkdir -p %s" % path(name))
-   if rkeys:
-      collect(name, rkeys, version, force, cores)
-
    f_pre = path(name, "train.pre")
    f_map = path(name, "enigma.map")
    f_log = path(name, "train.log")
-   if os.path.isfile(f_log):
-      os.system("rm -f %s" % f_log)
+  
+   if os.path.isfile(f_map) and not force:
+      return enigmap.load(f_map) if not hashing else hashing
+      
+   if rkeys:
+      collect(name, rkeys, version, force, cores)
 
-   emap = enigmap.create(file(f_pre), hashing)
-   enigmap.save(emap, f_map, version, hashing)
-   return emap if not hashing else hashing
+   #if os.path.isfile(f_log):
+   #   os.system("rm -f %s" % f_log)
+   if force or not os.path.isfile(f_map):
+      log.msg("+ creating feature info")
+      emap = enigmap.create(file(f_pre), hashing)
+      enigmap.save(emap, f_map, version, hashing)
+   else:
+      if not hashing:
+         emap = enigmap.load(f_map)
+      else:
+         emap = hashing
+
+   return emap
 
 def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None, cores=1):
    f_pre = path(name, "train.pre")
    f_in  = path(name, "train.in")
-   f_mod = path(name, "model.lin")
+   f_mod = path(name, "model.%s" % ("xgb" if xgb else "lin"))
    f_out = path(name, "train.out")
    f_log = path(name, "train.log")
 
-   if not force and os.path.isfile(f_mod):
+   if os.path.isfile(f_mod) and not force:
       return
 
-   print "collecting training data for: ", name
    emap = setup(name, rkeys, version, hashing, force, cores)
    if not emap:
       os.system("rm -fr %s" % path(name))
       return False
 
-   print "generating training data for: ", name
-   trains.make(file(f_pre), emap, out=file(f_in, "w"))
+   if force or not os.path.isfile(f_in):
+      log.msg("+ generating training data")
+      trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
    if xgb:
-      print "training xgboost: ", name
-      log = file(f_log, "a")
-      f_xgb = path(name, "model.xgb")
-      xgbooster.train(f_in, f_xgb, log, xgb_params)
-      log.close()
+      log.msg("+ training xgboost")
+      xlog = file(f_log, "a")
+      xgbooster.train(f_in, f_mod, xlog, xgb_params)
+      xlog.close()
    else:
-      print "training liblinear: ", name
+      log.msg("+ training liblinear")
       liblinear.train(f_in, f_mod, f_out, f_log)
       stat = liblinear.stats(f_in, f_out)
-      print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+      log.msg("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
 
    if gzip:
-      os.system("cd %s; gzip -f *.pre *.in *.out" % path(name))
+      os.system("cd %s; gzip -qf *.pre *.in *.out 2>/dev/null" % path(name))
 
    return True
 
@@ -84,23 +95,23 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
 
    method = None
-   print "smart-boosting", name
-   log = file(f_log, "a")
+   log.msg("+ smart-boosting")
+   xlog = file(f_log, "a")
    ##
    #method = "WRONG:POS"
    #terminate = lambda s: s["ACC:POS"] > 0.999
    ##
    while True:
-      log.write("\n--- ITER %d ---\n\n" % it)
+      xlog.write("\n--- ITER %d ---\n\n" % it)
       f_in  = path(name, "%02dtrain.in" % it)
       f_in2 = path(name, "%02dtrain.in" % (it+1))
       f_out = path(name, "%02dtrain.out" % it)
       f_mod = path(name, "%02dmodel.lin" % it)
-      log.flush()
+      xlog.flush()
       liblinear.train(f_in, f_mod, f_out, f_log)
       stat = liblinear.stats(f_in, f_out)
-      log.write("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
-      log.write("\n")
+      xlog.write("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
+      xlog.write("\n")
 
       if not method:
          if stat["ACC:POS"] < stat["ACC:NEG"]:
@@ -119,29 +130,30 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
       it += 1
 
    stat = liblinear.stats(f_in, f_out)
-   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+   log.msg("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
    
    if xgb:
       f_xgb = path(name, "model.xgb")
-      xgbooster.train(f_in, f_xgb, log, xgb_params)
-   log.close()
+      xgbooster.train(f_in, f_xgb, xlog, xgb_params)
+   xlog.close()
       
    if gzip:
-      os.system("cd %s; gzip -f *.pre *.in *.out" % path(name))
+      os.system("cd %s; gzip -qf *.pre *.in *.out 2>/dev/null" % path(name))
    
    return True
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
          cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
          boosting=False, xgb_params=None, hashing=None):
+   if nick:
+      model = "%s/%s" % (model, nick)
+   log.msg("Building model %s" % model)
    if ("h" in version and not hashing) or (hashing and "h" not in version):
       raise Exception("enigma.models.loop: Parameter hashing must be set to the hash base (int) iff version contains 'h'.")   
    if results is None:
       results = {}
    if update:
       results.update(expres.benchmarks.eval(bid, pids, limit, cores=cores, eargs=eargs, force=force))
-   if nick:
-      model = "%s/%s" % (model, nick)
    
    if boosting:
       smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing, cores=cores)
@@ -155,6 +167,8 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
    if update:
       pids.extend(new)
       results.update(expres.benchmarks.eval(bid, new, limit, cores=cores, eargs=eargs, force=force))
+   
+   log.msg("Building model finished\n")
    return new
 
 
