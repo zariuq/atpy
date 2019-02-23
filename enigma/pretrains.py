@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 import subprocess
 from .. import expres, eprover
 import os
