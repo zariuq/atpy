@@ -39,10 +39,8 @@ def setup(name, rkeys, version, hashing, force, cores):
    else:
       if not hashing:
          emap = enigmap.load(f_map)
-      else:
-         emap = hashing
 
-   return emap
+   return emap if not hashing else hashing
 
 def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=False, xgb_params=None, hashing=None, cores=1):
    f_pre = path(name, "train.pre")
