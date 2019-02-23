@@ -46,19 +46,21 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
       os.system("rm -fr %s" % path(name))
       return False
 
+   print "generating training data for: ", name
    trains.make(file(f_pre), emap, out=file(f_in, "w"))
-   print "training:", name
-   liblinear.train(f_in, f_mod, f_out, f_log)
-      
-   stat = liblinear.stats(f_in, f_out)
-   print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
 
    if xgb:
+      print "training xgboost: ", name
       log = file(f_log, "a")
       f_xgb = path(name, "model.xgb")
       xgbooster.train(f_in, f_xgb, log, xgb_params)
       log.close()
-   
+   else:
+      print "training liblinear: ", name
+      liblinear.train(f_in, f_mod, f_out, f_log)
+      stat = liblinear.stats(f_in, f_out)
+      print "\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)])
+
    if gzip:
       os.system("cd %s; gzip -f *.pre *.in *.out" % path(name))
 
@@ -131,7 +133,7 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
          cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
          boosting=False, xgb_params=None, hashing=None):
    if ("h" in version and not hashing) or (hashing and "h" not in version):
-      raise Exception("enigma.models.loop: Parameter hashing must be set to hash base (int) only when version contains 'h'.")   
+      raise Exception("enigma.models.loop: Parameter hashing must be set to the hash base (int) iff version contains 'h'.")   
    if results is None:
       results = {}
    if update:

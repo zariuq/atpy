@@ -21,6 +21,7 @@ def proofstate(f_pre, f_pos, f_neg):
       raise Exception("File %s does not match files %s and %s!" % (f_pre,f_pos,f_neg))
    file(f_pre, "w").write("\n".join(pre))
 
+# FIXME: add argument force=False and behaviour for force=True
 def prepare(rkeys, version):
    for (bid, pid, problem, limit) in rkeys:
 
@@ -51,14 +52,14 @@ def prepare(rkeys, version):
 
       
       f_pre = expres.results.path(bid, pid, problem, limit, ext="pre")
-      #if not os.path.isfile(f_pre):
-      out = file(f_pre, "w")
-      subprocess.call(["enigma-features", "--free-numbers", "--enigma-features=%s"%version, \
-         f_pos, f_neg, f_cnf], stdout=out)
-         #stdout=out, stderr=subprocess.STDOUT)
-      out.close()
-      if "W" in version:
-         proofstate(f_pre, f_pos, f_neg)
+      if not os.path.isfile(f_pre):
+         out = file(f_pre, "w")
+         subprocess.call(["enigma-features", "--free-numbers", "--enigma-features=%s"%version, \
+            f_pos, f_neg, f_cnf], stdout=out)
+            #stdout=out, stderr=subprocess.STDOUT)
+         out.close()
+         if "W" in version:
+            proofstate(f_pre, f_pos, f_neg)
 
 def translate(f_cnf, f_conj, f_out):
    "deprecated?"
