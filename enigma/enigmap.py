@@ -18,6 +18,7 @@ def load(f_map):
    for line in file(f_map):
       if line.startswith("version"):
          continue
+      # FIXME: load hashed stuff
       (fid,ftr) = line.strip().split("(")[1].split(",")
       fid = int(fid.strip(", "))
       ftr = ftr.strip('") .')
@@ -42,7 +43,7 @@ def create(pre, hashing=None):
 
    def add(features, new):
       for feature in new.strip().split(" "):
-         if not feature:
+         if (not feature) or feature.startswith("$"):
             continue
          if "/" in feature:
             feature = feature.split("/")[0]
