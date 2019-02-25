@@ -5,6 +5,7 @@ def sdbm(s):
    h = 0
    for c in s:
       h = ord(c) + (h << 6) + (h << 16) - h
+      h &= 0xFFFFFFFFFFFFFFFF
    return h
 
 def fhash(s, base):
