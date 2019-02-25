@@ -49,8 +49,7 @@ def parse(f_out, trains=False, out=None, proof=False):
             if mo:
                result[pat] = value(mo.group(1))
       # search for training samples
-      if trains and line.startswith("cnf(") and \
-         ("$false" not in line) and ("epred" not in line):
+      if trains and line.startswith("cnf(") and ("$false" not in line):
          if "trainpos" in line:
             result["POS"].append(line)
          elif "trainneg" in line:
