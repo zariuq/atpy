@@ -15,15 +15,17 @@ def terminating(cache):
 def start(intro, config=None, script=""):
    config = "\n   ".join(["%12s = %s"%(x,config[x]) for x in sorted(config)]) if config else ""
    intro = "%s\n\n   %s\n" % (intro, config)
-   msg(intro, script=script)
+   msg(intro, script=script, reset=True)
 
-def msg(msg, cache=[], script="", timestamp=True):
+def msg(msg, cache=[], script="", timestamp=True, reset=False):
    now = datetime.now()
    if not cache:
       script = argv[0] if argv and not script else script
       cache.append(now)
       cache.append(("%s%s~~~%s" % (PREFIX, script.lstrip("./").replace("/","+"), now)).replace(" ","~"))
       atexit.register(terminating, cache)
+   elif reset:
+      cache[0] = now
    
    msg = ("[%s] %s" % (now-cache[0], msg)) if timestamp else msg
    print msg
