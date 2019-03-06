@@ -129,7 +129,7 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
          cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
-         boosting=False, xgb_params=None):
+         boosting=False, xgb_params=None, train=True):
 
    if results is None:
       results = {}
@@ -138,17 +138,11 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
    if nick:
       model = "%s/%s" % (model, nick)
 
-   if cores > 1: # I want to allow training to use multiple threads (and do run-time parallelism on a per-problem basis)
-      OMP_NUM_THREADS = os.getenv("OMP_NUM_THREADS")
-      os.putenv("OMP_NUM_THREADS", str(cores))
    if boosting:
       smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
    else:
       standard(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params)
-   if cores > 1:
-      os.putenv("OMP_NUM_THREADS", OMP_NUM_THREADS)
-
-      
+          
    new = [
       protos.standalone(pids[0], model, mult=0, noinit=True, efun=efun),
       protos.combined(pids[0], model, mult=0, noinit=True, efun=efun)
