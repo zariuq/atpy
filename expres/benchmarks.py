@@ -1,7 +1,7 @@
 from multiprocessing import Pool
 import os
 
-from .. import eprover
+from .. import eprover, log
 from . import protos, results
 from . import solved as solvedb
 
@@ -41,7 +41,7 @@ def eval(bid, pids, limit, cores=4, force=False, ebinary=None, eargs=None):
       eta = "ETA %ds" % (float(len(pids))*len(probs)*limit/cores)
    else:
       eta = "%d jobs/cpu" % (float(len(pids))*len(probs)/cores)
-   print "Evaluating %s protos @ %s (%d) @ limit %s @ %s cores: %s" % (len(pids), bid, len(probs), limit, cores, eta)
+   log.msg("Evaluating %s protos @ %s (%d) @ limit %s @ %s cores: %s" % (len(pids), bid, len(probs), limit, cores, eta))
    jobs = [(bid,pid,problem,limit,ebinary,eargs) for pid in pids for problem in probs]
    pool = Pool(cores)
    res = pool.map_async(runjob if not force else runjob_force, jobs).get(365*24*3600)
