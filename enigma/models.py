@@ -128,7 +128,7 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    return True
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
-         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
+         cores=4, version="VHSLC", force=False, gzip=True, eargs=None, update=False, 
          boosting=False, xgb_params=None, train=True):
 
    if results is None:

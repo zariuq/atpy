@@ -13,7 +13,16 @@ E_DEFAULTS = "-s"
 
 def cmd(f_problem, proto, limit, ebinary=None, eargs=None):
    ebinary = ebinary if ebinary else E_BIN
-   eargs = eargs if eargs else E_DEFAULTS
+   if eargs and 'eargs' in eargs:
+       if 'wl' in eargs:
+           if 'bid-directory' in eargs and eargs['bid-directory']:
+               eargs_string = "%s %s/%s/%s" % (eargs['eargs'], eargs['wl'], eargs['pid'], f_problem.split('/')[-2])
+           else:
+               eargs_string = "%s %s/%s/%s" % (eargs['eargs'], eargs['wl'], eargs['pid'])
+       else:
+           eargs_string = eargs['eargs']
+   else:
+        eargs_string = E_DEFAULTS
    if isinstance(limit, int):
       limit = "--soft-cpu-limit=%s --cpu-limit=%s" % (limit, limit+1)
    elif isinstance(limit, str) and "-" in limit:
@@ -31,7 +40,7 @@ def cmd(f_problem, proto, limit, ebinary=None, eargs=None):
    else:
       raise Exception("atpy.eprover.runner: Unknown E limit for eprover.runner (%s)"%limit)
 
-   estatic = E_ARGS % "%s %s" % (limit, eargs)
+   estatic = E_ARGS % "%s %s" % (limit, eargs_string)
    return "%s %s %s %s %s" % (PERF,ebinary,estatic,proto,f_problem)
 
 def run(f_problem, proto, limit, f_out=None, ebinary=None, eargs=None):
