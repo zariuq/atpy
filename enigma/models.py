@@ -152,7 +152,6 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
       results = {}
    if update:
       results.update(expres.benchmarks.eval(bid, pids, limit, cores=cores, eargs=eargs, force=force))
-   
    if boosting:
       smartboost(model, results, version, force=force, gzip=gzip, xgb=xgb, xgb_params=xgb_params, hashing=hashing, cores=cores)
    else:
