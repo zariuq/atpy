@@ -1,5 +1,7 @@
 import math
 
+from .enigmap import fhash
+
 PREFIX = {
    "+": "+1",
    "-": "+0",
@@ -27,11 +29,14 @@ def count(ftrs, vector, emap, offset, strict=True):
          inc = 1
       if (not strict) and (ftr not in emap):
          continue
-      fid = emap[ftr] + offset
+      if isinstance(emap, int): # hashing version (emap::int is the base)
+         fid = fhash(ftr, emap) + offset
+      else:
+         fid = emap[ftr] + offset
       vector[fid] = vector[fid]+inc if fid in vector else inc
 
-def proofstate(ftrs, vector, offset):
-   #state = ""
+def proofstate(ftrs, vector, offset, hashing=None):
+   # TODO: hash also proof numbers (modulo hashing)
    for ftr in ftrs:
       if not ftr.startswith("$"):
          continue
@@ -39,11 +44,7 @@ def proofstate(ftrs, vector, offset):
       (num, val) = (int(num), float(val))
       if not val:
          continue
-      #state += " "
-      ##state += "%s:%d" % (num+offset, 1000*val)
-      #state += "%s:%0.3f" % (num+offset, val)
       vector[offset+num] = val
-   #return state
 
 def string(sign, vector):
    ftrs = ["%s:%s"%(fid,vector[fid]) for fid in sorted(vector)] 
@@ -60,8 +61,9 @@ def encode(pr, emap, strict=True):
    vector = {}
    count(clause.strip().split(" "), vector, emap, 0, strict)
    conjs = conj.strip().split(" ")
-   count(conjs, vector, emap, len(emap), strict)
-   proofstate(conjs, vector, 2*len(emap))
+   base = emap if isinstance(emap,int) else len(emap)
+   count(conjs, vector, emap, base, strict)
+   proofstate(conjs, vector, 2*base, emap)
    #vector = normalize(vector)
    return string(sign, vector)
 

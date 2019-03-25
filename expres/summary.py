@@ -1,4 +1,4 @@
-from .. import eprover
+from .. import eprover, log
 
 def make(bid, pids, results, ref=None):
    ret = {}
@@ -14,7 +14,7 @@ def make(bid, pids, results, ref=None):
       total = len(problems)
       errors = [r for r in problems if eprover.result.error(results[r])]
       if errors:
-         print "There were errors: %s" % errors
+         log.text("There were errors:\n%s" % "\n".join(map(str,errors)))
       errors = len(errors)
       solves = [r for r in problems if eprover.result.solved(results[r])]
       if ref:
