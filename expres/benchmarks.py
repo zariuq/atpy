@@ -20,13 +20,13 @@ def problems(bid, directory=False):
 
 def compute(bid, pid, problem, limit, force=False, ebinary=None, eargs=None):
    f_problem = path(bid, problem)
-   nick = eargs['nick'] if eargs and 'nick' in eargs else ""
-   f_out = results.path(bid, "%s%s" % (nick, pid), problem, limit)
+   nick_pid = "%s%s" % (eargs['nick'], pid) if eargs and 'nick' in eargs else ""
+   f_out = results.path(bid, nick_pid, problem, limit)
    if force or not os.path.isfile(f_out):
       os.system("mkdir -p %s" % os.path.dirname(f_out))
       proto = protos.load(pid)
       out = eprover.runner.run(f_problem, proto, limit, f_out, ebinary, eargs)
-   return results.load(bid, pid, problem, limit)
+   return results.load(bid, nick_pid, problem, limit)
 
 def runjob(job):
    return compute(job[0], job[1], job[2], job[3], ebinary=job[4], eargs=job[5])
@@ -35,7 +35,7 @@ def runjob_force(job):
    return compute(job[0], job[1], job[2], job[3], force=True, ebinary=job[4], eargs=job[5])
 
 def eval(bid, pids, limit, cores=4, force=False, ebinary=None, eargs=None):
-   nick = eargs['nick'] if eargs and 'nick' in eargs else ""
+   nick_pid = "%s%s" % (eargs['nick'], pid) if eargs and 'nick' in eargs else ""
    probs = problems(bid, directory=True) if eargs and 'bid-directory' in eargs and eargs['bid-directory'] else problems(bid)
    if isinstance(limit, int):
       eta = "ETA %ds" % (float(len(pids))*len(probs)*limit/cores)
@@ -45,7 +45,7 @@ def eval(bid, pids, limit, cores=4, force=False, ebinary=None, eargs=None):
    jobs = [(bid,pid,problem,limit,ebinary,eargs) for pid in pids for problem in probs]
    pool = Pool(cores)
    res = pool.map_async(runjob if not force else runjob_force, jobs).get(365*24*3600)
-   jobs = [(x[0], "%s%s" % (nick, x[1]), x[2], x[3]) for x in jobs]
+   jobs = [(x[0], nick_pid, x[2], x[3]) for x in jobs]
    res = dict(zip(jobs, res))
    solvedb.update(res)
    pool.close()
