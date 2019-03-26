@@ -44,9 +44,9 @@ def eval(bid, pids, limit, watchlist_dir=None, pidkey="", cores=4, force=False):
    pool = Pool(cores)
    #res = map(runjob if not force else runjob_force, jobs)
    res = pool.map_async(runjob if not force else runjob_force, jobs).get(365*24*3600)
-   jobs = [(job[0], job[1], job[2], job[3]) for job in jobs]
+   jobs = [(job[0], pidkey+job[1], job[2], job[3]) for job in jobs]
    res = dict(zip(jobs, res))
-   solvedb.update(res, pidkey)
+   solvedb.update(res)
    pool.close()
    return res
 
