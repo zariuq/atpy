@@ -141,7 +141,7 @@ def smartboost(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fa
    return True
 
 def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, efun="Enigma",
-         cores=4, version="VHSLC", force=False, gzip=True, eargs="", update=False, 
+         cores=4, version="VHSLC", force=False, gzip=True, eargs=None, update=False, 
          boosting=False, xgb_params=None, hashing=None):
    if nick:
       model = "%s/%s" % (model, nick)
@@ -166,6 +166,16 @@ def loop(model, pids, results=None, bid=None, limit=None, nick=None, xgb=False, 
       pids.extend(new)
       results.update(expres.benchmarks.eval(bid, new, limit, cores=cores, eargs=eargs, force=force))
    
+   if xgb and 'update_wl' in eargs and eargs['update_wl']:
+        log.msg("Refining watchlist\n")
+        f_mod = path(model, "model.%s" % ("xgb" if xgb else "lin"))
+        f_wl_old = eargs['wldir']
+        f_wl_new = path(model, "model.wl")
+        f_lim = 2*hashing #breaks without hashing
+        if not os.path.isdir(f_wl_new):
+            xgbooster.update_watchlist(f_mod, f_lim, f_wl_old, f_wl_new)
+        eargs['wldir'] = f_wl_new
+
    log.msg("Building model finished\n")
    return new
 

@@ -26,7 +26,9 @@ def cmd(f_problem, proto, limit, ebinary=None, eargs=None):
            if 'bid-directory' in eargs and eargs['bid-directory']:
                eargs_string = "%s %s/%s/%s" % (eargs['eargs'], eargs['wl'], eargs['pid'], f_problem.split('/')[-2])
            else:
-               eargs_string = "%s %s/%s/%s" % (eargs['eargs'], eargs['wl'], eargs['pid'])
+               eargs_string = "%s %s/%s" % (eargs['eargs'], eargs['wl'], eargs['pid'])
+       elif 'wldir':
+           eargs_string = "%s --watchlist-dir=%s" % (eargs['eargs'], eargs['wldir'])
        else:
            eargs_string = eargs['eargs']
    else:

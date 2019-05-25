@@ -4,4 +4,5 @@ import enigma
 import paramils
 import grackle
 import log
+import knn
 

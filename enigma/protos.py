@@ -3,7 +3,7 @@ from .. import expres
 
 def standalone(pid, name, mult=0, noinit=False, efun="Enigma"):
    proto = expres.protos.load(pid)
-   enigma = "1*%s(PreferWatchlist,%s,%s)" % (efun, name, mult)
+   enigma = "1*%s(PreferWatchlistRelevant,%s,%s)" % (efun, name, mult)
    eproto = "%s-H'(%s)'" % (proto[:proto.index("-H'")], enigma)
    post = efun
    post += ("0M%s" % mult) if mult else "0"

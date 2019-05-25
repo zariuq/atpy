@@ -1,6 +1,8 @@
 import sys
+import os
 import numpy
 import xgboost as xgb
+import subprocess
 from scipy.sparse import csr_matrix, lil_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_svmlight_file
@@ -88,4 +90,24 @@ def train_old(f_in, f_out, log=None):
       sys.stdout = oldout
 
    return bst
+
+def update_watchlist(f_model, f_lim, f_wl_old, f_wl_new):
+    old_watchlist = sorted(os.listdir(f_wl_old))
+    
+    model = xgb.Booster()
+    model.load_model(f_model)
+    imp_features = [int(f[1:]) for f in model.get_score()]
+    watchlist_array = numpy.array(old_watchlist)[numpy.array([i for i in imp_features if i > f_lim]) - f_lim - 1]
+    
+    os.mkdir(f_wl_new)
+    for problem in old_watchlist:
+        new_prob_path = os.path.join(f_wl_new, problem)
+        subprocess.call('echo "cnf(empty,axiom,$false)." > {0}'.format(new_prob_path), shell=True)
+    for problem in watchlist_array:
+        old_prob_path = os.path.join(f_wl_old, problem)
+        new_prob_path = os.path.join(f_wl_new, problem)
+        subprocess.call('cp {0} {1}'.format(old_prob_path, new_prob_path), shell=True)
+
+
+
 
