@@ -23,7 +23,7 @@ def combined(pid, name, freq=None, mult=0, noinit=False, efun="Enigma"):
    else:
       post += "F%s"% freq
    post += ("M%s" % mult) if mult else ""
-   enigma = "%d*%s(PreferWatchlist,%s,%s)" % (freq,efun,name,mult)
+   enigma = "%d*%s(PreferWatchlistRelevant,%s,%s)" % (freq,efun,name,mult)
    eproto = proto.replace("-H'(", "-H'(%s,"%enigma)
    if noinit:
       eproto = eproto.replace("--prefer-initial-clauses", "")

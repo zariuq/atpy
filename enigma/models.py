@@ -73,6 +73,7 @@ def standard(name, rkeys=None, version="VHSLC", force=False, gzip=True, xgb=Fals
       log.msg("\n".join(["%s = %s"%(x,stat[x]) for x in sorted(stat)]))
 
    if gzip:
+      log.msg("+ compressing training data")
       os.system("cd %s; gzip -qf *.pre *.in *.out 2>/dev/null" % path(name))
 
    return True
